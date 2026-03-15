@@ -1,0 +1,82 @@
+Warning: The allowCypressEnv configuration option is enabled. This allows any browser code to read values from Cypress.env(). This is insecure and will be removed in a future major version.
+
+1. Replace Cypress.env() calls with cy.env() (for sensitive values) or Cypress.expose() (for public configuration)
+2. Set allowCypressEnv: false in your Cypress configuration to disable Cypress.env()
+
+Learn more: https://on.cypress.io/cypress-env-migration
+
+
+================================================================================
+
+  (Run Starting)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Cypress:        15.12.0                                                                        │
+  │ Browser:        Electron 138 (headless)                                                        │
+  │ Node Version:   v20.20.1 (/home/rahul/.nvm/versions/node/v20.20.1/bin/node)                    │
+  │ Specs:          1 found (login.cy.js)                                                          │
+  │ Searched:       cypress/e2e/login.cy.js                                                        │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                    
+  Running:  login.cy.js                                                                     (1 of 1)
+
+
+  Kirana Login Flow
+    1) should show validation errors for empty form
+    2) should show error for invalid credentials
+    ✓ should login successfully and redirect to dashboard (2748ms)
+
+
+  1 passing (16s)
+  2 failing
+
+  1) Kirana Login Flow
+       should show validation errors for empty form:
+     AssertionError: Timed out retrying after 4000ms: Expected to find content: 'Login failed' but never did.
+      at Context.eval (webpack://kirana-frontend/./cypress/e2e/login.cy.js:10:11)
+
+  2) Kirana Login Flow
+       should show error for invalid credentials:
+     AssertionError: Timed out retrying after 4000ms: Expected to find content: 'Login failed' but never did.
+      at Context.eval (webpack://kirana-frontend/./cypress/e2e/login.cy.js:17:11)
+
+
+
+
+  (Results)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        3                                                                                │
+  │ Passing:      1                                                                                │
+  │ Failing:      2                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  2                                                                                │
+  │ Video:        false                                                                            │
+  │ Duration:     15 seconds                                                                       │
+  │ Spec Ran:     login.cy.js                                                                      │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+  (Screenshots)
+
+  -  /home/rahul/Desktop/Kirana/frontend/cypress/screenshots/login.cy.js/Kirana Login     (1280x720)
+      Flow -- should show validation errors for empty form (failed).png                             
+  -  /home/rahul/Desktop/Kirana/frontend/cypress/screenshots/login.cy.js/Kirana Login     (1280x720)
+      Flow -- should show error for invalid credentials (failed).png                                
+
+
+================================================================================
+
+  (Run Finished)
+
+
+       Spec                                              Tests  Passing  Failing  Pending  Skipped  
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ ✖  login.cy.js                              00:15        3        1        2        -        - │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+    ✖  1 of 1 failed (100%)                     00:15        3        1        2        -        -  
+

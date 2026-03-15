@@ -1,0 +1,193 @@
+import { useState, useEffect } from 'react';
+import { shopkeepersAPI, dealersAPI } from '../../lib/api';
+import styles from '../../styles/dashboard.module.css';
+
+export default function ShopkeeperDashboard() {
+    const [shopkeeperProfile, setShopkeeperProfile] = useState(null);
+    const [preferredDealers, setPreferredDealers] = useState([]);
+    const [allDealers, setAllDealers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [activeTab, setActiveTab] = useState('overview');
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const [profileRes, dealersRes] = await Promise.all([
+                shopkeepersAPI.myProfile(),
+                dealersAPI.listDealers(),
+            ]);
+            setShopkeeperProfile(profileRes.data);
+            setAllDealers(dealersRes.data.results || []);
+            setError('');
+        } catch (err) {
+            setError('Failed to load shopkeeper information');
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleFollowDealer = async (dealerId) => {
+        try {
+            await shopkeepersAPI.followDealer(dealerId);
+            fetchData();
+        } catch (err) {
+            setError('Failed to follow dealer');
+        }
+    };
+
+    const handleUnfollowDealer = async (dealerId) => {
+        try {
+            await shopkeepersAPI.unfollowDealer(dealerId);
+            fetchData();
+        } catch (err) {
+            setError('Failed to unfollow dealer');
+        }
+    };
+
+    return (
+        <div className={styles.dashboardContainer}>
+            <div className={styles.dashboardHeader}>
+                <h1>Shopkeeper Dashboard</h1>
+                <p>Welcome, {shopkeeperProfile?.shop_name || 'Shopkeeper'}</p>
+            </div>
+
+            {error && <div className={styles.errorAlert}>{error}</div>}
+
+            <div className={styles.statsGrid}>
+                <div className={styles.statCard}>
+                    <div className={styles.statNumber}>{preferredDealers.length}</div>
+                    <div className={styles.statLabel}>Preferred Dealers</div>
+                </div>
+                <div className={styles.statCard}>
+                    <div className={styles.statNumber}>24</div>
+                    <div className={styles.statLabel}>Active Orders</div>
+                </div>
+                <div className={styles.statCard}>
+                    <div className={styles.statNumber}>₹12,450</div>
+                    <div className={styles.statLabel}>Total Spending</div>
+                </div>
+            </div>
+
+            <div className={styles.tabsContainer}>
+                <div className={styles.tabs}>
+                    <button
+                        className={`${styles.tab} ${activeTab === 'overview' ? styles.active : ''}`}
+                        onClick={() => setActiveTab('overview')}
+                    >
+                        📊 Overview
+                    </button>
+                    <button
+                        className={`${styles.tab} ${activeTab === 'dealers' ? styles.active : ''}`}
+                        onClick={() => setActiveTab('dealers')}
+                    >
+                        🏪 Dealers
+                    </button>
+                    <button
+                        className={`${styles.tab} ${activeTab === 'orders' ? styles.active : ''}`}
+                        onClick={() => setActiveTab('orders')}
+                    >
+                        📋 Orders
+                    </button>
+                    <button
+                        className={`${styles.tab} ${activeTab === 'profile' ? styles.active : ''}`}
+                        onClick={() => setActiveTab('profile')}
+                    >
+                        👤 Profile
+                    </button>
+                </div>
+
+                <div className={styles.tabContent}>
+                    {activeTab === 'overview' && (
+                        <div className={styles.overviewTab}>
+                            <h2>Business Overview</h2>
+                            <div className={styles.overviewGrid}>
+                                <div className={styles.overviewCard}>
+                                    <h3>📝 Recent Orders</h3>
+                                    <p className={styles.emptyMessage}>No recent orders</p>
+                                </div>
+                                <div className={styles.overviewCard}>
+                                    <h3>⭐ Top Dealers</h3>
+                                    <p className={styles.emptyMessage}>No dealers followed yet</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'dealers' && (
+                        <div className={styles.dealersTab}>
+                            <div className={styles.sectionHeader}>
+                                <h2>Browse Dealers</h2>
+                                <span className={styles.subtitle}>
+                                    Find and follow dealers to view their product catalog
+                                </span>
+                            </div>
+
+                            {loading ? (
+                                <p>Loading dealers...</p>
+                            ) : allDealers.length === 0 ? (
+                                <p className={styles.emptyMessage}>
+                                    No dealers available
+                                </p>
+                            ) : (
+                                <div className={styles.dealersGrid}>
+                                    {allDealers.map((dealer) => (
+                                        <div key={dealer.id} className={styles.dealerCard}>
+                                            <h3>{dealer.business_name}</h3>
+                                            <p className={styles.dealerInfo}>
+                                                License: {dealer.license}
+                                            </p>
+                                            <p className={styles.dealerInfo}>
+                                                GST: {dealer.gst_number}
+                                            </p>
+                                            <button
+                                                className={styles.primaryBtn}
+                                                onClick={() => handleFollowDealer(dealer.id)}
+                                            >
+                                                Follow Dealer
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {activeTab === 'orders' && (
+                        <div className={styles.ordersTab}>
+                            <h2>My Orders</h2>
+                            <div className={styles.emptyMessage}>
+                                No orders yet. Start browsing products to place your first order!
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'profile' && (
+                        <div className={styles.profileTab}>
+                            <h2>Business Profile</h2>
+                            <div className={styles.profileInfo}>
+                                <div className={styles.infoField}>
+                                    <label>Shop Name</label>
+                                    <p>{shopkeeperProfile?.shop_name || 'N/A'}</p>
+                                </div>
+                                <div className={styles.infoField}>
+                                    <label>Business Type</label>
+                                    <p>{shopkeeperProfile?.business_type || 'N/A'}</p>
+                                </div>
+                                <div className={styles.infoField}>
+                                    <label>Monthly Budget</label>
+                                    <p>₹{shopkeeperProfile?.monthly_budget || 'N/A'}</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
