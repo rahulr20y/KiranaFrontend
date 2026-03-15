@@ -1,0 +1,10 @@
+kind: "AppHostingYaml"
+apiVersion: "v1beta"
+runConfig:
+  cpu: 1
+  memoryMiB: 512
+  maxInstances: 10
+  concurrency: 80
+env:
+  - variable: NEXT_PUBLIC_API_URL
+    value: "https://backend-service-abc.a.run.app/api/v1/"
