@@ -8,6 +8,15 @@
     ],
     "frameworksBackend": {
       "region": "us-central1"
-    }
+    },
+    "rewrites": [
+      {
+        "source": "/api/**",
+        "run": {
+          "serviceId": "kirana-backend",
+          "region": "us-central1"
+        }
+      }
+    ]
   }
 }

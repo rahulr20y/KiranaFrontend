@@ -7,4 +7,4 @@ runConfig:
   concurrency: 80
 env:
   - variable: NEXT_PUBLIC_API_URL
-    value: "https://backend-service-abc.a.run.app/api/v1/"
+    value: "/api/v1"
