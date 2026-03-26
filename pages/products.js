@@ -77,7 +77,23 @@ export default function Products() {
         setOrderError('');
         setOrderSuccess('');
         try {
-            await ordersAPI.createOrder({ product: productId, quantity: 1 });
+            // Get the product object to find dealer_id
+            const product = products.find(p => p.id === productId);
+            
+            const orderData = {
+                items: [{ 
+                    product: productId, 
+                    quantity: 1,
+                    product_name: product?.name,
+                    product_price: product?.price,
+                    subtotal: product?.price
+                }],
+                dealer_id: product?.dealer,
+                shipping_address: user?.address || 'Main Street, City',
+                notes: 'Automated order'
+            };
+            
+            await ordersAPI.createOrder(orderData);
             setOrderSuccess('Order placed successfully!');
         } catch (err) {
             setOrderError('Failed to place order.');
