@@ -27,8 +27,8 @@ export default function Navbar() {
                     <ul className={styles.navLinks}>
                         {isAuthenticated && (
                             <>
-                                <li><a href="#features">Products</a></li>
-                                <li><a href="#roles">Orders</a></li>
+                                <li><Link href="/products">Products</Link></li>
+                                <li><Link href="/dashboard">Orders</Link></li>
                             </>
                         )}
                         {!isAuthenticated && (
