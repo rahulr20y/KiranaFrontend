@@ -50,7 +50,12 @@ export default function DealerDashboard() {
     const handleAddProduct = async (e) => {
         e.preventDefault();
         try {
-            await productsAPI.createProduct(formData);
+            const submissionData = { ...formData };
+            // Remove empty optional fields to satisfy backend validation
+            if (!submissionData.category) {
+                delete submissionData.category;
+            }
+            await productsAPI.createProduct(submissionData);
             setFormData({
                 name: '',
                 description: '',
