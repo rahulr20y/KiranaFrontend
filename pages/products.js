@@ -86,6 +86,7 @@ export default function Products() {
                     quantity: 1,
                     product_name: product?.name,
                     product_price: product?.price,
+                    unit: product?.unit || 'kg',
                     subtotal: product?.price
                 }],
                 dealer_id: product?.dealer,
