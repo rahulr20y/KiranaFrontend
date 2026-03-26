@@ -6,10 +6,8 @@ describe('Kirana Login Flow', () => {
     });
 
     it('should show validation errors for empty form', () => {
-        cy.get('input[name=username]').focus().blur();
         cy.get('button[type=submit]').click();
-        // Since HTML5 validation blocks submission, we either check for validity or 
-        // update the test to accept that it doesn't redirect
+        cy.contains('Login failed');
         cy.url().should('include', '/login');
     });
 

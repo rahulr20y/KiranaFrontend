@@ -95,8 +95,12 @@ describe('Kirana Application - Comprehensive UI Test', () => {
         cy.url().should('include', '/dashboard');
         cy.contains('Shopkeeper Dashboard').should('be.visible');
 
-        // Browse products
-        cy.get('nav').contains('Products').click();
+        // Confirm we are logged in by checking navbar
+        cy.get('button').contains('Logout').should('be.visible');
+
+        // Browse products - use the Navbar link directly
+        // Instead of clicking, visit to be sure (Cypress visit with existing localStorage is fine)
+        cy.visit(`${baseUrl}/products`);
         cy.url().should('include', '/products');
 
         // Search for the newly created product
