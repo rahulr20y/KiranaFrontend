@@ -37,6 +37,9 @@ describe('Shopkeeper Dashboard Dynamic Data', () => {
         cy.get('input[name="stock_quantity"]').type('100');
         cy.get('button').contains('Add Product', { timeout: 10000 }).last().click();
         
+        // Wait for product to be added successfully
+        cy.contains('td', dealer.productName, { timeout: 15000 }).should('be.visible');
+        
         // Go to profile and set business name
         cy.contains('button', 'Profile').click();
         cy.get('h2').contains('Business Profile').should('be.visible');
