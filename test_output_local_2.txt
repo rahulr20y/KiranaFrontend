@@ -1,0 +1,79 @@
+Warning: The allowCypressEnv configuration option is enabled. This allows any browser code to read values from Cypress.env(). This is insecure and will be removed in a future major version.
+
+1. Replace Cypress.env() calls with cy.env() (for sensitive values) or Cypress.expose() (for public configuration)
+2. Set allowCypressEnv: false in your Cypress configuration to disable Cypress.env()
+
+Learn more: https://on.cypress.io/cypress-env-migration
+
+
+================================================================================
+
+  (Run Starting)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Cypress:        15.12.0                                                                        │
+  │ Browser:        Electron 138 (headless)                                                        │
+  │ Node Version:   v20.20.1 (/home/rahul/.nvm/versions/node/v20.20.1/bin/node)                    │
+  │ Specs:          1 found (shopkeeper_dashboard.cy.js)                                           │
+  │ Searched:       cypress/e2e/shopkeeper_dashboard.cy.js                                         │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                    
+  Running:  shopkeeper_dashboard.cy.js                                                      (1 of 1)
+
+
+  Shopkeeper Dashboard Dynamic Data
+    1) should display preferred dealers and recent orders dynamically
+
+
+  0 passing (21s)
+  1 failing
+
+  1) Shopkeeper Dashboard Dynamic Data
+       should display preferred dealers and recent orders dynamically:
+     AssertionError: Timed out retrying after 15000ms: expected 'http://localhost:3000/signup' to include '/dashboard'
+      at Context.eval (webpack://kirana-frontend/./cypress/e2e/shopkeeper_dashboard.cy.js:30:35)
+
+
+
+
+  (Results)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        1                                                                                │
+  │ Passing:      0                                                                                │
+  │ Failing:      1                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  1                                                                                │
+  │ Video:        true                                                                             │
+  │ Duration:     20 seconds                                                                       │
+  │ Spec Ran:     shopkeeper_dashboard.cy.js                                                       │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+  (Screenshots)
+
+  -  /home/rahul/Desktop/Kirana/frontend/cypress/screenshots/shopkeeper_dashboard.cy.     (1280x720)
+     js/Shopkeeper Dashboard Dynamic Data -- should display preferred dealers and rec               
+     ent orders dynamically (failed).png                                                            
+
+
+  (Video)
+
+  -  Video output: /home/rahul/Desktop/Kirana/frontend/cypress/videos/shopkeeper_dashboard.cy.js.mp4
+
+
+================================================================================
+
+  (Run Finished)
+
+
+       Spec                                              Tests  Passing  Failing  Pending  Skipped  
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ ✖  shopkeeper_dashboard.cy.js               00:20        1        -        1        -        - │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+    ✖  1 of 1 failed (100%)                     00:20        1        -        1        -        -  
+

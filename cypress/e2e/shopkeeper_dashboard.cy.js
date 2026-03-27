@@ -43,9 +43,9 @@ describe('Shopkeeper Dashboard Dynamic Data', () => {
         // Go to profile and set business name
         cy.contains('button', 'Profile').click();
         cy.get('h2').contains('Business Profile').should('be.visible');
-        cy.contains('button', 'Edit Profile').click();
+        cy.contains('button', 'Edit Profile').click({ force: true });
         cy.get('input').filter(':visible').first().clear().type(`Business_${dealer.username}`);
-        cy.get('button').contains('Save Changes').click();
+        cy.contains('button', 'Save Changes').click({ force: true });
         
         cy.get('button').contains('Logout').click();
 
