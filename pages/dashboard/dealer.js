@@ -85,11 +85,11 @@ export default function DealerDashboard() {
                     <div className={styles.statLabel}>Total Products</div>
                 </div>
                 <div className={styles.statCard}>
-                    <div className={styles.statNumber}>4.5</div>
+                    <div className={styles.statNumber}>{dealerProfile?.rating || '0.0'}</div>
                     <div className={styles.statLabel}>Average Rating</div>
                 </div>
                 <div className={styles.statCard}>
-                    <div className={styles.statNumber}>128</div>
+                    <div className={styles.statNumber}>{dealerProfile?.total_orders || '0'}</div>
                     <div className={styles.statLabel}>Total Orders</div>
                 </div>
             </div>

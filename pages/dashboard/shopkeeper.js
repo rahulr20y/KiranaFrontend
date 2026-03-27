@@ -65,11 +65,11 @@ export default function ShopkeeperDashboard() {
                     <div className={styles.statLabel}>Preferred Dealers</div>
                 </div>
                 <div className={styles.statCard}>
-                    <div className={styles.statNumber}>24</div>
+                    <div className={styles.statNumber}>{shopkeeperProfile?.total_orders || '0'}</div>
                     <div className={styles.statLabel}>Active Orders</div>
                 </div>
                 <div className={styles.statCard}>
-                    <div className={styles.statNumber}>₹12,450</div>
+                    <div className={styles.statNumber}>₹{Number(shopkeeperProfile?.total_spent || 0).toLocaleString()}</div>
                     <div className={styles.statLabel}>Total Spending</div>
                 </div>
             </div>
