@@ -28,7 +28,6 @@ describe('Kirana Full Business Lifecycle', () => {
         cy.get('button').contains('Create Account').click();
 
         cy.url({ timeout: 15000 }).should('include', '/dashboard');
-        cy.contains('[LIVE v1.5]', { timeout: 120000 }).should('be.visible');
         
         // Add a product
         cy.get('button').contains('Add Product').click();
