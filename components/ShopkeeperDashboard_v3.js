@@ -24,8 +24,10 @@ export default function ShopkeeperDashboard_v3() {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const [profileRes, dealersRes, preferredDealersRes, ordersRes] = await Promise.all([
-                shopkeepersAPI.myProfile(),
+            // Fetch Profile first to trigger backend lazy creation, preventing 404 on followed dealers
+            const profileRes = await shopkeepersAPI.myProfile();
+
+            const [dealersRes, preferredDealersRes, ordersRes] = await Promise.all([
                 dealersAPI.listDealers(),
                 shopkeepersAPI.getPreferredDealers(),
                 ordersAPI.myOrders()
@@ -36,7 +38,7 @@ export default function ShopkeeperDashboard_v3() {
                 business_type: profileRes.data.business_type || '',
                 monthly_budget: profileRes.data.monthly_budget || '',
             });
-            setAllDealers(dealersRes.data.results || []);
+            setAllDealers(dealersRes.data.results || dealersRes.data || []);
             setPreferredDealers(preferredDealersRes.data || []);
             setRecentOrders(ordersRes.data || []);
             setError('');
