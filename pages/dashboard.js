@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../lib/authContext';
 import Navbar from '../components/Navbar';
-import DealerDashboard from './dashboard/dealer';
-import ShopkeeperDashboard from './dashboard/shopkeeper';
+import DealerDashboard from '../components/DealerDashboard';
+import ShopkeeperDashboard from '../components/ShopkeeperDashboard';
 import styles from '../styles/dashboard.module.css';
 
 export default function Dashboard() {

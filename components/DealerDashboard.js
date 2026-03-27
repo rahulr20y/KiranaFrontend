@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { productsAPI, dealersAPI } from '../../lib/api';
-import styles from '../../styles/dashboard.module.css';
+import { productsAPI, dealersAPI } from '../lib/api';
+import styles from '../styles/dashboard.module.css';
 
 export default function DealerDashboard() {
     const [products, setProducts] = useState([]);
