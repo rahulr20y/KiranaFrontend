@@ -44,7 +44,7 @@ export default function Navbar() {
                         {isAuthenticated ? (
                             <>
                                 <div className={styles.userInfo}>
-                                    <span className={styles.userName}>{user?.first_name || user?.username} [v1.4]</span>
+                                    <span className={styles.userName}>{user?.first_name || user?.username} [LIVE v1.5]</span>
                                     <span className={styles.userType}>({user?.user_type})</span>
                                 </div>
                                 <button className={styles.dashboardBtn} onClick={handleDashboard}>

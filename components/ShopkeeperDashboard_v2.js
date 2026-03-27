@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { shopkeepersAPI, dealersAPI } from '../lib/api';
 import styles from '../styles/dashboard.module.css';
 
-export default function ShopkeeperDashboard() {
+export default function ShopkeeperDashboard_v2() {
     const [shopkeeperProfile, setShopkeeperProfile] = useState(null);
     const [preferredDealers, setPreferredDealers] = useState([]);
     const [allDealers, setAllDealers] = useState([]);

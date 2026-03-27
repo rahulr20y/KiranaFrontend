@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { productsAPI, dealersAPI } from '../lib/api';
 import styles from '../styles/dashboard.module.css';
 
-export default function DealerDashboard() {
+export default function DealerDashboard_v2() {
     const [products, setProducts] = useState([]);
     const [dealerProfile, setDealerProfile] = useState(null);
     const [loading, setLoading] = useState(true);

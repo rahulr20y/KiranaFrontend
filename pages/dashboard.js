@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../lib/authContext';
 import Navbar from '../components/Navbar';
-import DealerDashboard from '../components/DealerDashboard';
-import ShopkeeperDashboard from '../components/ShopkeeperDashboard';
+import DealerDashboard_v2 from '../components/DealerDashboard_v2';
+import ShopkeeperDashboard_v2 from '../components/ShopkeeperDashboard_v2';
 import styles from '../styles/dashboard.module.css';
 
 export default function Dashboard() {
@@ -23,9 +23,9 @@ export default function Dashboard() {
         <div className={styles.page}>
             <Navbar />
             {user?.user_type === 'dealer' ? (
-                <DealerDashboard />
+                <DealerDashboard_v2 />
             ) : (
-                <ShopkeeperDashboard />
+                <ShopkeeperDashboard_v2 />
             )}
         </div>
     );
