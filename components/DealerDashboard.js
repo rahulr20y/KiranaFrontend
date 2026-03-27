@@ -8,6 +8,12 @@ export default function DealerDashboard() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [activeTab, setActiveTab] = useState('products');
+    const [isEditingProfile, setIsEditingProfile] = useState(false);
+    const [profileFormData, setProfileFormData] = useState({
+        business_name: '',
+        business_category: '',
+        gst_number: '',
+    });
     const [showAddProduct, setShowAddProduct] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
@@ -30,6 +36,11 @@ export default function DealerDashboard() {
             ]);
             setProducts(productsRes.data.results || productsRes.data || []);
             setDealerProfile(profileRes.data);
+            setProfileFormData({
+                business_name: profileRes.data.business_name || '',
+                business_category: profileRes.data.business_category || '',
+                gst_number: profileRes.data.gst_number || '',
+            });
             setError('');
         } catch (err) {
             setError('Failed to load dealer information');
@@ -219,21 +230,78 @@ export default function DealerDashboard() {
 
                     {activeTab === 'profile' && (
                         <div className={styles.profileTab}>
-                            <h2>Business Profile</h2>
-                            <div className={styles.profileInfo}>
-                                <div className={styles.infoField}>
-                                    <label>Business Name</label>
-                                    <p>{dealerProfile?.business_name || 'N/A'}</p>
-                                </div>
-                                <div className={styles.infoField}>
-                                    <label>License Number</label>
-                                    <p>{dealerProfile?.license || 'N/A'}</p>
-                                </div>
-                                <div className={styles.infoField}>
-                                    <label>GST Number</label>
-                                    <p>{dealerProfile?.gst_number || 'N/A'}</p>
-                                </div>
+                            <div className={styles.sectionHeader}>
+                                <h2>Business Profile</h2>
+                                <button 
+                                    className={styles.secondaryBtn}
+                                    onClick={() => setIsEditingProfile(!isEditingProfile)}
+                                >
+                                    {isEditingProfile ? 'Cancel' : 'Edit Profile'}
+                                </button>
                             </div>
+                            
+                            {isEditingProfile ? (
+                                <form className={styles.editForm} onSubmit={async (e) => {
+                                    e.preventDefault();
+                                    try {
+                                        const res = await dealersAPI.updateProfile(profileFormData);
+                                        setDealerProfile(res.data);
+                                        setIsEditingProfile(false);
+                                        alert('Profile updated successfully!');
+                                    } catch (err) {
+                                        alert('Failed to update profile');
+                                    }
+                                }}>
+                                    <div className={styles.formGroup}>
+                                        <label>Business Name</label>
+                                        <input 
+                                            type="text" 
+                                            value={profileFormData.business_name}
+                                            onChange={(e) => setProfileFormData({...profileFormData, business_name: e.target.value})}
+                                        />
+                                    </div>
+                                    <div className={styles.formGroup}>
+                                        <label>Business Category</label>
+                                        <input 
+                                            type="text" 
+                                            value={profileFormData.business_category}
+                                            onChange={(e) => setProfileFormData({...profileFormData, business_category: e.target.value})}
+                                        />
+                                    </div>
+                                    <div className={styles.formGroup}>
+                                        <label>GST Number</label>
+                                        <input 
+                                            type="text" 
+                                            value={profileFormData.gst_number}
+                                            onChange={(e) => setProfileFormData({...profileFormData, gst_number: e.target.value})}
+                                        />
+                                    </div>
+                                    <button type="submit" className={styles.primaryBtn}>Save Changes</button>
+                                </form>
+                            ) : (
+                                <div className={styles.profileInfo}>
+                                    <div className={styles.infoField}>
+                                        <label>Account User</label>
+                                        <p>{dealerProfile?.user?.username} ({dealerProfile?.user?.email})</p>
+                                    </div>
+                                    <div className={styles.infoField}>
+                                        <label>Business Name</label>
+                                        <p>{dealerProfile?.business_name || 'N/A'}</p>
+                                    </div>
+                                    <div className={styles.infoField}>
+                                        <label>Category</label>
+                                        <p>{dealerProfile?.business_category || 'N/A'}</p>
+                                    </div>
+                                    <div className={styles.infoField}>
+                                        <label>GST Number</label>
+                                        <p>{dealerProfile?.gst_number || 'N/A'}</p>
+                                    </div>
+                                    <div className={styles.infoField}>
+                                        <label>License</label>
+                                        <p>{dealerProfile?.business_license || 'N/A'}</p>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
 

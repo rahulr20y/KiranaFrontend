@@ -9,6 +9,12 @@ export default function ShopkeeperDashboard() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [activeTab, setActiveTab] = useState('overview');
+    const [isEditingProfile, setIsEditingProfile] = useState(false);
+    const [profileFormData, setProfileFormData] = useState({
+        shop_name: '',
+        business_type: '',
+        monthly_budget: '',
+    });
 
     useEffect(() => {
         fetchData();
@@ -22,6 +28,11 @@ export default function ShopkeeperDashboard() {
                 dealersAPI.listDealers(),
             ]);
             setShopkeeperProfile(profileRes.data);
+            setProfileFormData({
+                shop_name: profileRes.data.shop_name || '',
+                business_type: profileRes.data.business_type || '',
+                monthly_budget: profileRes.data.monthly_budget || '',
+            });
             setAllDealers(dealersRes.data.results || []);
             setError('');
         } catch (err) {
@@ -169,21 +180,74 @@ export default function ShopkeeperDashboard() {
 
                     {activeTab === 'profile' && (
                         <div className={styles.profileTab}>
-                            <h2>Business Profile</h2>
-                            <div className={styles.profileInfo}>
-                                <div className={styles.infoField}>
-                                    <label>Shop Name</label>
-                                    <p>{shopkeeperProfile?.shop_name || 'N/A'}</p>
-                                </div>
-                                <div className={styles.infoField}>
-                                    <label>Business Type</label>
-                                    <p>{shopkeeperProfile?.business_type || 'N/A'}</p>
-                                </div>
-                                <div className={styles.infoField}>
-                                    <label>Monthly Budget</label>
-                                    <p>₹{shopkeeperProfile?.monthly_budget || 'N/A'}</p>
-                                </div>
+                            <div className={styles.sectionHeader}>
+                                <h2>Business Profile</h2>
+                                <button 
+                                    className={styles.secondaryBtn}
+                                    onClick={() => setIsEditingProfile(!isEditingProfile)}
+                                >
+                                    {isEditingProfile ? 'Cancel' : 'Edit Profile'}
+                                </button>
                             </div>
+
+                            {isEditingProfile ? (
+                                <form className={styles.editForm} onSubmit={async (e) => {
+                                    e.preventDefault();
+                                    try {
+                                        const res = await shopkeepersAPI.updateProfile(profileFormData);
+                                        setShopkeeperProfile(res.data);
+                                        setIsEditingProfile(false);
+                                        alert('Profile updated successfully!');
+                                    } catch (err) {
+                                        alert('Failed to update profile');
+                                    }
+                                }}>
+                                    <div className={styles.formGroup}>
+                                        <label>Shop Name</label>
+                                        <input 
+                                            type="text" 
+                                            value={profileFormData.shop_name}
+                                            onChange={(e) => setProfileFormData({...profileFormData, shop_name: e.target.value})}
+                                        />
+                                    </div>
+                                    <div className={styles.formGroup}>
+                                        <label>Business Type</label>
+                                        <input 
+                                            type="text" 
+                                            value={profileFormData.business_type}
+                                            onChange={(e) => setProfileFormData({...profileFormData, business_type: e.target.value})}
+                                        />
+                                    </div>
+                                    <div className={styles.formGroup}>
+                                        <label>Monthly Budget (₹)</label>
+                                        <input 
+                                            type="number" 
+                                            value={profileFormData.monthly_budget}
+                                            onChange={(e) => setProfileFormData({...profileFormData, monthly_budget: e.target.value})}
+                                        />
+                                    </div>
+                                    <button type="submit" className={styles.primaryBtn}>Save Changes</button>
+                                </form>
+                            ) : (
+                                <div className={styles.profileInfo}>
+                                    <div className={styles.infoField}>
+                                        <label>Account User</label>
+                                        <p>{shopkeeperProfile?.user?.username} ({shopkeeperProfile?.user?.email})</p>
+                                    </div>
+                                    <div className={styles.infoField}>
+                                        <label>Shop Name</label>
+                                        <p>{shopkeeperProfile?.shop_name || 'N/A'}</p>
+                                    </div>
+                                    <div className={styles.infoField}>
+                                        <label>Business Type</label>
+                                        <p>{shopkeeperProfile?.business_type || 'N/A'}</p>
+                                    </div>
+                                    <div className={styles.infoField}>
+                                        <label>Monthly Budget</label>
+                                        <p>₹{Number(shopkeeperProfile?.monthly_budget || 0).toLocaleString()}</p>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
