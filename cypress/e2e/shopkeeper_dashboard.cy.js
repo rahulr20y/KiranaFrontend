@@ -58,6 +58,9 @@ describe('Shopkeeper Dashboard Dynamic Data', () => {
         // Just click the first Follow Dealer button
         cy.get('button').contains('Follow Dealer').first().click();
         
+        // Wait for the follow action and fetch to complete
+        cy.wait(3000);
+        
         // Verify Preferred Dealers count updated
         cy.contains('button', 'Overview').click();
         cy.get('div').contains('Preferred Dealers').parent().find('div').first().should('have.text', '1');
