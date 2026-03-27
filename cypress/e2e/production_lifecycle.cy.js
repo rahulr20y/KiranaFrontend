@@ -28,6 +28,8 @@ describe('Kirana Full Business Lifecycle', () => {
         cy.get('button').contains('Create Account').click();
 
         cy.url({ timeout: 15000 }).should('include', '/dashboard');
+        // Wait up to 5 minutes for Vercel deployment to propagate
+        cy.contains('[v1.7 FORCED]', { timeout: 300000 }).should('be.visible');
         
         // Add a product
         cy.get('button').contains('Add Product').click();
