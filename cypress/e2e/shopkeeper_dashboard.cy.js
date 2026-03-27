@@ -1,5 +1,5 @@
 describe('Shopkeeper Dashboard Dynamic Data', () => {
-    const baseUrl = 'https://kiranafrontend.vercel.app';
+    const baseUrl = 'http://localhost:3000';
     const timestamp = Date.now().toString().slice(-6);
     
     const dealer = {
