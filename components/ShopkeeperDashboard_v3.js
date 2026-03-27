@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { shopkeepersAPI, dealersAPI } from '../lib/api';
+import { shopkeepersAPI, dealersAPI, ordersAPI } from '../lib/api';
 import styles from '../styles/dashboard.module.css';
 
 export default function ShopkeeperDashboard_v3() {
     const [shopkeeperProfile, setShopkeeperProfile] = useState(null);
     const [preferredDealers, setPreferredDealers] = useState([]);
     const [allDealers, setAllDealers] = useState([]);
+    const [recentOrders, setRecentOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [activeTab, setActiveTab] = useState('overview');
@@ -23,9 +24,11 @@ export default function ShopkeeperDashboard_v3() {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const [profileRes, dealersRes] = await Promise.all([
+            const [profileRes, dealersRes, preferredDealersRes, ordersRes] = await Promise.all([
                 shopkeepersAPI.myProfile(),
                 dealersAPI.listDealers(),
+                shopkeepersAPI.getPreferredDealers(),
+                ordersAPI.myOrders()
             ]);
             setShopkeeperProfile(profileRes.data);
             setProfileFormData({
@@ -34,6 +37,8 @@ export default function ShopkeeperDashboard_v3() {
                 monthly_budget: profileRes.data.monthly_budget || '',
             });
             setAllDealers(dealersRes.data.results || []);
+            setPreferredDealers(preferredDealersRes.data || []);
+            setRecentOrders(ordersRes.data || []);
             setError('');
         } catch (err) {
             setError('Failed to load shopkeeper information');
@@ -120,11 +125,33 @@ export default function ShopkeeperDashboard_v3() {
                             <div className={styles.overviewGrid}>
                                 <div className={styles.overviewCard}>
                                     <h3>📝 Recent Orders</h3>
-                                    <p className={styles.emptyMessage}>No recent orders</p>
+                                    {recentOrders && recentOrders.length > 0 ? (
+                                        <div className={styles.recentList}>
+                                            {recentOrders.slice(0, 3).map(order => (
+                                                <div key={order.id} className={styles.recentItem}>
+                                                    <span>Order #{order.order_number?.substring(0, 8) || order.id}</span>
+                                                    <span className={styles.statusBadge}>{order.status}</span>
+                                                    <span>₹{Number(order.net_amount || order.total_amount).toLocaleString()}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className={styles.emptyMessage}>No recent orders</p>
+                                    )}
                                 </div>
                                 <div className={styles.overviewCard}>
                                     <h3>⭐ Top Dealers</h3>
-                                    <p className={styles.emptyMessage}>No dealers followed yet</p>
+                                    {preferredDealers && preferredDealers.length > 0 ? (
+                                        <div className={styles.recentList}>
+                                            {preferredDealers.slice(0, 3).map(dealer => (
+                                                <div key={dealer.id} className={styles.recentItem}>
+                                                    <span>{dealer.business_name}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className={styles.emptyMessage}>No dealers followed yet</p>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -172,9 +199,29 @@ export default function ShopkeeperDashboard_v3() {
                     {activeTab === 'orders' && (
                         <div className={styles.ordersTab}>
                             <h2>My Orders</h2>
-                            <div className={styles.emptyMessage}>
-                                No orders yet. Start browsing products to place your first order!
-                            </div>
+                            {recentOrders && recentOrders.length > 0 ? (
+                                <div className={styles.ordersGrid}>
+                                    {recentOrders.map((order) => (
+                                        <div key={order.id} className={styles.orderCard}>
+                                            <div className={styles.orderHeader}>
+                                                <h3>Order #{order.order_number?.substring(0, 8) || order.id}</h3>
+                                                <span className={styles.orderStatus}>{order.status}</span>
+                                            </div>
+                                            <div className={styles.orderDetails}>
+                                                <p>Dealer: {order.dealer?.business_name || 'N/A'}</p>
+                                                <p>Date: {new Date(order.created_at).toLocaleDateString()}</p>
+                                            </div>
+                                            <div className={styles.orderTotal}>
+                                                <strong>Total: ₹{Number(order.net_amount || order.total_amount).toLocaleString()}</strong>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className={styles.emptyMessage}>
+                                    No orders yet. Start browsing products to place your first order!
+                                </div>
+                            )}
                         </div>
                     )}
 
