@@ -28,7 +28,7 @@ export default function DealerDashboard() {
                 productsAPI.myProducts(),
                 dealersAPI.myProfile(),
             ]);
-            setProducts(productsRes.data.results || []);
+            setProducts(productsRes.data.results || productsRes.data || []);
             setDealerProfile(profileRes.data);
             setError('');
         } catch (err) {
