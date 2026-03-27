@@ -38,8 +38,9 @@ describe('Shopkeeper Dashboard Dynamic Data', () => {
         cy.get('button').contains('Add Product', { timeout: 10000 }).last().click();
         
         // Go to profile and set business name
-        cy.get('button').contains('Profile').click();
-        cy.get('button').contains('Edit Profile').click();
+        cy.contains('button', 'Profile').click();
+        cy.get('h2').contains('Business Profile').should('be.visible');
+        cy.contains('button', 'Edit Profile').click();
         cy.get('input').filter(':visible').first().clear().type(`Business_${dealer.username}`);
         cy.get('button').contains('Save Changes').click();
         
@@ -59,11 +60,11 @@ describe('Shopkeeper Dashboard Dynamic Data', () => {
         cy.url({ timeout: 15000 }).should('include', '/dashboard');
 
         // --- 3. Follow Dealer ---
-        cy.get('button').contains('Dealers').click();
+        cy.contains('button', 'Dealers').click();
         cy.get('h3', { timeout: 10000 }).contains(`Business_${dealer.username}`).parent().find('button').contains('Follow Dealer').click();
         
         // Verify Preferred Dealers count updated
-        cy.get('button').contains('Overview').click();
+        cy.contains('button', 'Overview').click();
         cy.get('div').contains('Preferred Dealers').parent().find('div').first().should('have.text', '1');
         
         // Verify Top Dealers section
@@ -77,8 +78,8 @@ describe('Shopkeeper Dashboard Dynamic Data', () => {
         cy.get('div', { timeout: 15000 }).contains('Order placed successfully!').should('be.visible');
 
         // --- 5. Verify Orders on Dashboard ---
-        cy.get('button').contains('Dashboard').click();
-        cy.get('button').contains('Overview').click();
+        cy.contains('button', 'Dashboard').click();
+        cy.contains('button', 'Overview').click();
         
         // Active Orders should be 1
         cy.get('div').contains('Active Orders').parent().find('div').first().should('have.text', '1');
@@ -88,7 +89,7 @@ describe('Shopkeeper Dashboard Dynamic Data', () => {
         cy.get('h3').contains('Recent Orders').parent().contains('pending').should('be.visible');
         
         // Orders Tab
-        cy.get('button').contains('Orders').click();
+        cy.contains('button', 'Orders').click();
         cy.get('h2').contains('My Orders').should('be.visible');
         cy.get('.orderCard').should('have.length.at.least', 1);
         cy.get('.orderCard').first().contains('₹500').should('be.visible');
