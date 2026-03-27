@@ -246,6 +246,18 @@ export default function ShopkeeperDashboard_v2() {
                                         <label>Monthly Budget</label>
                                         <p>₹{Number(shopkeeperProfile?.monthly_budget || 0).toLocaleString()}</p>
                                     </div>
+                                    <div className={styles.infoField}>
+                                        <label>Shop Rating</label>
+                                        <p>⭐ {shopkeeperProfile?.rating || '0.0'}</p>
+                                    </div>
+                                    <div className={styles.infoField}>
+                                        <label>Total Spending</label>
+                                        <p>₹{Number(shopkeeperProfile?.total_spent || 0).toLocaleString()}</p>
+                                    </div>
+                                    <div className={styles.infoField}>
+                                        <label>Member Since</label>
+                                        <p>{new Date(shopkeeperProfile?.created_at).toLocaleDateString()}</p>
+                                    </div>
                                 </div>
                             )}
                         </div>

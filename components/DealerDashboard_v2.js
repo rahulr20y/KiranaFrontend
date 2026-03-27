@@ -297,8 +297,20 @@ export default function DealerDashboard_v2() {
                                         <p>{dealerProfile?.gst_number || 'N/A'}</p>
                                     </div>
                                     <div className={styles.infoField}>
+                                        <label>Business Rating</label>
+                                        <p>⭐ {dealerProfile?.rating || '0.0'}</p>
+                                    </div>
+                                    <div className={styles.infoField}>
+                                        <label>Total Orders Received</label>
+                                        <p>{dealerProfile?.total_orders || '0'}</p>
+                                    </div>
+                                    <div className={styles.infoField}>
                                         <label>License</label>
                                         <p>{dealerProfile?.business_license || 'N/A'}</p>
+                                    </div>
+                                    <div className={styles.infoField}>
+                                        <label>Member Since</label>
+                                        <p>{new Date(dealerProfile?.created_at).toLocaleDateString()}</p>
                                     </div>
                                 </div>
                             )}
