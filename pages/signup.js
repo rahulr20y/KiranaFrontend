@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../lib/authContext';
+import GoogleSignInButton from '../components/GoogleSignInButton';
 import styles from '../styles/auth.module.css';
 
 export default function Signup() {
@@ -261,6 +262,11 @@ export default function Signup() {
                         {isLoading ? 'Creating Account...' : 'Create Account'}
                     </button>
                 </form>
+
+                <div className={styles.divider}>OR</div>
+                <div className={styles.socialLogin}>
+                    <GoogleSignInButton buttonLabel="Sign up with Google" />
+                </div>
 
                 <p className={styles.switchAuth}>
                     Already have an account?{' '}

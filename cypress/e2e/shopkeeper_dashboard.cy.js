@@ -1,5 +1,5 @@
 describe('Shopkeeper Dashboard Dynamic Data', () => {
-    const baseUrl = 'http://localhost:3000';
+    const baseUrl = Cypress.config('baseUrl');
     const timestamp = Date.now().toString().slice(-6);
     
     const dealer = {

@@ -2,7 +2,7 @@
 
 describe('Kirana Login Flow', () => {
     beforeEach(() => {
-        cy.visit('http://localhost:3000/login');
+        cy.visit(`${Cypress.config('baseUrl')}/login`);
     });
 
     it('should show validation errors for empty form', () => {

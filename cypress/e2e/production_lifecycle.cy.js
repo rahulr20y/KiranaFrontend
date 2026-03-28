@@ -1,5 +1,5 @@
 describe('Kirana Full Business Lifecycle', () => {
-    const baseUrl = 'https://kiranafrontend.vercel.app';
+    const baseUrl = Cypress.config('baseUrl');
     const timestamp = Date.now().toString().slice(-6);
     
     const dealer = {

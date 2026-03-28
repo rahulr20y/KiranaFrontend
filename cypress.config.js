@@ -2,7 +2,7 @@ const { defineConfig } = require('cypress');
 
 module.exports = defineConfig({
     e2e: {
-        baseUrl: 'https://kiranafrontend.vercel.app',
+        baseUrl: process.env.CYPRESS_BASE_URL || 'http://localhost:3000',
         specPattern: 'cypress/e2e/**/*.cy.js',
         supportFile: false,
         video: true,

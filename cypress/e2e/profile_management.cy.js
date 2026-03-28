@@ -1,5 +1,5 @@
 describe('Profile Management Tests', () => {
-    const baseUrl = 'https://kiranafrontend.vercel.app';
+    const baseUrl = Cypress.config('baseUrl');
     const timestamp = Date.now().toString().slice(-6);
     
     it('should allow a dealer to edit their business profile', () => {
