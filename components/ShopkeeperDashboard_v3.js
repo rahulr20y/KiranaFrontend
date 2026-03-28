@@ -68,6 +68,17 @@ export default function ShopkeeperDashboard_v3() {
         }
     };
 
+    const handleCancelOrder = async (orderId) => {
+        if (!confirm('Are you sure you want to cancel this order?')) return;
+        try {
+            await ordersAPI.cancelOrder(orderId);
+            fetchData();
+            alert('Order cancelled and stock restored!');
+        } catch (err) {
+            setError('Failed to cancel order');
+        }
+    };
+
     return (
         <div className={styles.dashboardContainer}>
             <div className={styles.dashboardHeader}>
@@ -216,6 +227,15 @@ export default function ShopkeeperDashboard_v3() {
                                             <div className={styles.orderTotal}>
                                                 <strong>Total: ₹{Number(order.net_amount || order.total_amount).toLocaleString()}</strong>
                                             </div>
+                                            {order.status !== 'cancelled' && (
+                                                <button 
+                                                    className={styles.btnSmallDanger}
+                                                    onClick={() => handleCancelOrder(order.id)}
+                                                    style={{ marginTop: '10px' }}
+                                                >
+                                                    Cancel Order
+                                                </button>
+                                            )}
                                         </div>
                                     ))}
                                 </div>

@@ -96,6 +96,7 @@ export default function Products() {
             
             await ordersAPI.createOrder(orderData);
             setOrderSuccess('Order placed successfully!');
+            fetchData(); // Refresh to show updated stock
         } catch (err) {
             setOrderError('Failed to place order.');
         } finally {
@@ -176,7 +177,7 @@ export default function Products() {
                                     <div className={styles.productFooter}>
                                         <div className={styles.priceSection}>
                                             <span className={styles.price}>₹{product.price}</span>
-                                            {product.stock_quantity && (
+                                            {(product.stock_quantity !== undefined && product.stock_quantity !== null) && (
                                                 <span className={styles.stock}>
                                                     Stock: {product.stock_quantity}
                                                 </span>
