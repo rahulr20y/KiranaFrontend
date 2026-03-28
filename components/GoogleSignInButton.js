@@ -105,7 +105,7 @@ export default function GoogleSignInButton({ redirectTo = '/dashboard', buttonLa
                     <div className={styles.modal}>
                         <div className={styles.modalHeader}>
                             <h2>Almost there! 🎉</h2>
-                            <p>One last step — tell us how you'll use Kirana</p>
+                            <p>One last step &mdash; tell us how you&apos;ll use Kirana</p>
                         </div>
 
                         <div className={styles.typeOptions}>

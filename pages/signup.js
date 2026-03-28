@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 import { useAuth } from '../lib/authContext';
 import GoogleSignInButton from '../components/GoogleSignInButton';
 import styles from '../styles/auth.module.css';
@@ -270,9 +271,9 @@ export default function Signup() {
 
                 <p className={styles.switchAuth}>
                     Already have an account?{' '}
-                    <a href="/login" className={styles.link}>
+                    <Link href="/login" className={styles.link}>
                         Login
-                    </a>
+                    </Link>
                 </p>
             </div>
         </div>

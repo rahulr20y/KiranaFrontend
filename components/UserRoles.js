@@ -33,7 +33,7 @@ export default function UserRoles() {
             <div className={styles.container}>
                 <h2 className={styles.sectionTitle}>For Everyone</h2>
                 <p className={styles.sectionSubtitle}>
-                    Whether you're a shopkeeper or dealer, Kirana has a solution for you
+                    Whether you&apos;re a shopkeeper or dealer, Kirana has a solution for you
                 </p>
 
                 <div className={styles.rolesGrid}>
