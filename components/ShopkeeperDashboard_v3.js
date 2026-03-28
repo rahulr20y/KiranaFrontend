@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { shopkeepersAPI, dealersAPI, ordersAPI } from '../lib/api';
+import { shopkeepersAPI, dealersAPI, ordersAPI, notificationsAPI, paymentsAPI } from '../lib/api';
 import styles from '../styles/dashboard.module.css';
 
 export default function ShopkeeperDashboard_v3() {
@@ -7,6 +7,9 @@ export default function ShopkeeperDashboard_v3() {
     const [preferredDealers, setPreferredDealers] = useState([]);
     const [allDealers, setAllDealers] = useState([]);
     const [recentOrders, setRecentOrders] = useState([]);
+    const [broadcasts, setBroadcasts] = useState([]);
+    const [notifications, setNotifications] = useState([]);
+    const [khataSummary, setKhataSummary] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [activeTab, setActiveTab] = useState('overview');
@@ -26,11 +29,13 @@ export default function ShopkeeperDashboard_v3() {
             setLoading(true);
             // Fetch Profile first to trigger backend lazy creation, preventing 404 on followed dealers
             const profileRes = await shopkeepersAPI.myProfile();
-
-            const [dealersRes, preferredDealersRes, ordersRes] = await Promise.all([
+            const [dealersRes, preferredDealersRes, ordersRes, broadcastsRes, notificationsRes, khataRes] = await Promise.all([
                 dealersAPI.listDealers(),
                 shopkeepersAPI.getPreferredDealers(),
-                ordersAPI.myOrders()
+                ordersAPI.myOrders(),
+                notificationsAPI.listBroadcasts(),
+                notificationsAPI.listPersonal(),
+                paymentsAPI.getSummary(),
             ]);
             setShopkeeperProfile(profileRes.data);
             setProfileFormData({
@@ -41,6 +46,9 @@ export default function ShopkeeperDashboard_v3() {
             setAllDealers(dealersRes.data.results || dealersRes.data || []);
             setPreferredDealers(preferredDealersRes.data || []);
             setRecentOrders(ordersRes.data || []);
+            setBroadcasts(broadcastsRes.data.results || broadcastsRes.data || []);
+            setNotifications(notificationsRes.data.results || notificationsRes.data || []);
+            setKhataSummary(khataRes.data);
             setError('');
         } catch (err) {
             setError('Failed to load shopkeeper information');
@@ -90,16 +98,16 @@ export default function ShopkeeperDashboard_v3() {
 
             <div className={styles.statsGrid}>
                 <div className={styles.statCard}>
-                    <div className={styles.statLabel}>Active Orders</div>
                     <div className={styles.statNumber}>{shopkeeperProfile?.total_orders || '0'}</div>
+                    <div className={styles.statLabel}>Active Orders</div>
                 </div>
                 <div className={styles.statCard}>
-                    <div className={styles.statLabel}>Preferred Dealers</div>
                     <div className={styles.statNumber}>{preferredDealers.length || '0'}</div>
+                    <div className={styles.statLabel}>Preferred Dealers</div>
                 </div>
                 <div className={styles.statCard}>
-                    <div className={styles.statLabel}>Total Spending</div>
-                    <div className={styles.statNumber}>₹{Number(shopkeeperProfile?.total_spent || 0).toLocaleString()}</div>
+                    <div className={styles.statNumber}>₹{khataSummary?.my_total_payable || '0'}</div>
+                    <div className={styles.statLabel}>Digital Ledger</div>
                 </div>
             </div>
 
@@ -109,25 +117,37 @@ export default function ShopkeeperDashboard_v3() {
                         className={`${styles.tab} ${activeTab === 'overview' ? styles.active : ''}`}
                         onClick={() => setActiveTab('overview')}
                     >
-                        📊 Overview
+                        Overview
                     </button>
                     <button
                         className={`${styles.tab} ${activeTab === 'dealers' ? styles.active : ''}`}
                         onClick={() => setActiveTab('dealers')}
                     >
-                        🏪 Dealers
+                        Dealers
                     </button>
                     <button
                         className={`${styles.tab} ${activeTab === 'orders' ? styles.active : ''}`}
                         onClick={() => setActiveTab('orders')}
                     >
-                        📋 Orders
+                        Orders
+                    </button>
+                    <button
+                        className={`${styles.tab} ${activeTab === 'broadcasts' ? styles.active : ''}`}
+                        onClick={() => setActiveTab('broadcasts')}
+                    >
+                        Broadcasts
+                    </button>
+                    <button
+                        className={`${styles.tab} ${activeTab === 'khata' ? styles.active : ''}`}
+                        onClick={() => setActiveTab('khata')}
+                    >
+                        Khata (Ledger)
                     </button>
                     <button
                         className={`${styles.tab} ${activeTab === 'profile' ? styles.active : ''}`}
                         onClick={() => setActiveTab('profile')}
                     >
-                        👤 Profile
+                        Profile
                     </button>
                 </div>
 
@@ -153,17 +173,26 @@ export default function ShopkeeperDashboard_v3() {
                                     )}
                                 </div>
                                 <div className={styles.overviewCard}>
-                                    <h3>⭐ Top Dealers</h3>
-                                    {preferredDealers && preferredDealers.length > 0 ? (
+                                    <h3>📣 Latest Broadcasts</h3>
+                                    {broadcasts && broadcasts.length > 0 ? (
                                         <div className={styles.recentList}>
-                                            {preferredDealers.slice(0, 3).map(dealer => (
-                                                <div key={dealer.id} className={styles.recentItem}>
-                                                    <span>{dealer.business_name}</span>
+                                            {broadcasts.slice(0, 3).map(broadcast => (
+                                                <div key={broadcast.id} className={`${styles.recentItem} ${styles['type_' + broadcast.notification_type]}`}>
+                                                    <div className={styles.recentItemMain}>
+                                                        <strong>{broadcast.business_name}:</strong> {broadcast.title}
+                                                    </div>
                                                 </div>
                                             ))}
+                                            <button 
+                                                className={styles.textBtn} 
+                                                onClick={() => setActiveTab('broadcasts')}
+                                                style={{ marginTop: '10px', fontSize: '13px' }}
+                                            >
+                                                View all broadcasts →
+                                            </button>
                                         </div>
                                     ) : (
-                                        <p className={styles.emptyMessage}>No dealers followed yet</p>
+                                        <p className={styles.emptyMessage}>No broadcasts from followed dealers</p>
                                     )}
                                 </div>
                             </div>
@@ -244,6 +273,118 @@ export default function ShopkeeperDashboard_v3() {
                                     No orders yet. Start browsing products to place your first order!
                                 </div>
                             )}
+                        </div>
+                    )}
+
+                    {activeTab === 'broadcasts' && (
+                        <div className={styles.broadcastsTab}>
+                            <div className={styles.sectionHeader}>
+                                <h2>Dealers Broadcasts</h2>
+                                <span className={styles.subtitle}>
+                                    Important updates from dealers you follow
+                                </span>
+                            </div>
+
+                            {loading ? (
+                                <p>Loading broadcasts...</p>
+                            ) : broadcasts.length === 0 ? (
+                                <p className={styles.emptyMessage}>
+                                    No broadcasts yet. Follow more dealers to stay updated!
+                                </p>
+                            ) : (
+                                <div className={styles.broadcastList}>
+                                    {broadcasts.map((broadcast) => (
+                                        <div key={broadcast.id} className={`${styles.broadcastCard} ${styles['type_' + broadcast.notification_type]}`}>
+                                            <div className={styles.broadcastHeader}>
+                                                <div className={styles.broadcastSource}>
+                                                    <strong>{broadcast.business_name}</strong>
+                                                    <span className={styles.dealerName}>({broadcast.dealer_name})</span>
+                                                </div>
+                                                <span className={styles.broadcastDate}>
+                                                    {new Date(broadcast.created_at).toLocaleDateString()}
+                                                </span>
+                                            </div>
+                                            <div className={styles.broadcastBody}>
+                                                <h3>{broadcast.title}</h3>
+                                                <p>{broadcast.message}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {activeTab === 'khata' && (
+                        <div className={styles.khataSection}>
+                            <h2>Digital Ledger (Khata)</h2>
+                            <div className={styles.statsGrid}>
+                                <div className={styles.statCard}>
+                                    <h3>Total Outstanding</h3>
+                                    <p className={styles.amount}>₹{khataSummary?.my_total_payable || 0}</p>
+                                </div>
+                                <div className={styles.statCard}>
+                                    <h3>Total Purchases</h3>
+                                    <p>₹{khataSummary?.total_purchases_value || 0}</p>
+                                </div>
+                                <div className={styles.statCard}>
+                                    <h3>Total Payments Made</h3>
+                                    <p>₹{khataSummary?.total_payments_made || 0}</p>
+                                </div>
+                            </div>
+
+                            <div className={styles.ledgerTableContainer}>
+                                <h3>Dealer Wise Balances</h3>
+                                <table className={styles.ledgerTable}>
+                                    <thead>
+                                        <tr>
+                                            <th>Dealer</th>
+                                            <th>Business Name</th>
+                                            <th>Total Purchases</th>
+                                            <th>Total Payments</th>
+                                            <th>Balance Due</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {khataSummary?.ledger_by_dealer?.map((entry) => (
+                                            <tr key={entry.dealer_id}>
+                                                <td>{entry.dealer_name}</td>
+                                                <td>{entry.business_name}</td>
+                                                <td>₹{entry.total_orders}</td>
+                                                <td>₹{entry.total_payments}</td>
+                                                <td className={entry.balance > 0 ? styles.due : styles.settled}>
+                                                    ₹{entry.balance}
+                                                </td>
+                                                <td>
+                                                    <button 
+                                                        className={styles.actionButton}
+                                                        onClick={() => {
+                                                            const amount = prompt(`Enter amount paid to ${entry.business_name}:`);
+                                                            if (amount && !isNaN(amount)) {
+                                                                paymentsAPI.createPayment({
+                                                                    shopkeeper: shopkeeperProfile.user.id,
+                                                                    dealer: entry.dealer_id,
+                                                                    amount: parseFloat(amount),
+                                                                    payment_method: 'cash',
+                                                                    notes: 'Manual entry from Ledger'
+                                                                }).then(() => fetchData());
+                                                            }
+                                                        }}
+                                                    >
+                                                        Record Payment
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {khataSummary?.ledger_by_dealer?.length === 0 && (
+                                            <tr>
+                                                <td colSpan="6" style={{textAlign: 'center'}}>No ledger entries found.</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     )}
 
