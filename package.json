@@ -2,6 +2,10 @@
   "name": "kirana-frontend",
   "version": "1.0.0",
   "description": "Kirana - Connect product dealers with small shopkeepers",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rahulr20y/KiranaFrontend.git"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
