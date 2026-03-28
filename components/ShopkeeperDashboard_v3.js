@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { shopkeepersAPI, dealersAPI, ordersAPI, notificationsAPI, paymentsAPI } from '../lib/api';
 import styles from '../styles/dashboard.module.css';
+import toastStyles from '../styles/toast.module.css';
+import NotificationToast from './NotificationToast';
 
 export default function ShopkeeperDashboard_v3() {
     const [shopkeeperProfile, setShopkeeperProfile] = useState(null);
@@ -19,6 +21,10 @@ export default function ShopkeeperDashboard_v3() {
         business_type: '',
         monthly_budget: '',
     });
+    const [toasts, setToasts] = useState([]);
+    const [activeLedger, setActiveLedger] = useState(null);
+    const [ledgerHistory, setLedgerHistory] = useState([]);
+    const [ledgerLoading, setLedgerLoading] = useState(false);
 
     useEffect(() => {
         fetchData();
@@ -58,12 +64,22 @@ export default function ShopkeeperDashboard_v3() {
         }
     };
 
+    const addToast = (message, type = 'info') => {
+        const id = Date.now();
+        setToasts(prev => [...prev, { id, message, type }]);
+    };
+
+    const removeToast = (id) => {
+        setToasts(prev => prev.filter(t => t.id !== id));
+    };
+
     const handleFollowDealer = async (dealerId) => {
         try {
             await shopkeepersAPI.followDealer(dealerId);
             fetchData();
+            addToast('Successfully followed dealer!', 'success');
         } catch (err) {
-            setError('Failed to follow dealer');
+            addToast('Failed to follow dealer', 'error');
         }
     };
 
@@ -71,8 +87,9 @@ export default function ShopkeeperDashboard_v3() {
         try {
             await shopkeepersAPI.unfollowDealer(dealerId);
             fetchData();
+            addToast('Unfollowed dealer', 'info');
         } catch (err) {
-            setError('Failed to unfollow dealer');
+            addToast('Failed to unfollow dealer', 'error');
         }
     };
 
@@ -81,9 +98,23 @@ export default function ShopkeeperDashboard_v3() {
         try {
             await ordersAPI.cancelOrder(orderId);
             fetchData();
-            alert('Order cancelled and stock restored!');
+            addToast('Order cancelled and stock restored!', 'success');
         } catch (err) {
-            setError('Failed to cancel order');
+            addToast('Failed to cancel order', 'error');
+        }
+    };
+
+    const handleViewLedger = async (partner) => {
+        try {
+            setLedgerLoading(true);
+            setActiveLedger(partner);
+            const res = await paymentsAPI.detailedLedger(partner.dealer_id);
+            setLedgerHistory(res.data.history);
+        } catch (err) {
+            addToast('Failed to load ledger history', 'error');
+            setActiveLedger(null);
+        } finally {
+            setLedgerLoading(false);
         }
     };
 
@@ -368,11 +399,21 @@ export default function ShopkeeperDashboard_v3() {
                                                                     amount: parseFloat(amount),
                                                                     payment_method: 'cash',
                                                                     notes: 'Manual entry from Ledger'
-                                                                }).then(() => fetchData());
+                                                                }).then(() => {
+                                                                    fetchData();
+                                                                    addToast('Payment recorded!', 'success');
+                                                                });
                                                             }
                                                         }}
                                                     >
                                                         Record Payment
+                                                    </button>
+                                                    <button 
+                                                        className={styles.textBtn}
+                                                        onClick={() => handleViewLedger(entry)}
+                                                        style={{ marginLeft: '5px' }}
+                                                    >
+                                                        Details →
                                                     </button>
                                                 </td>
                                             </tr>
@@ -474,6 +515,68 @@ export default function ShopkeeperDashboard_v3() {
                     )}
                 </div>
             </div>
+            {/* Notification Toasts */}
+            <div className={toastStyles.toastContainer}>
+                {toasts.map(toast => (
+                    <NotificationToast 
+                        key={toast.id} 
+                        message={toast.message} 
+                        type={toast.type} 
+                        onClose={() => removeToast(toast.id)} 
+                    />
+                ))}
+            </div>
+
+            {/* Ledger Detail Modal */}
+            {activeLedger && (
+                <div className={styles.modalOverlay}>
+                    <div className={styles.modal} style={{ maxWidth: '800px', width: '90%' }}>
+                        <div className={styles.modalHeader}>
+                            <h2>Ledger History: {activeLedger.business_name}</h2>
+                            <button className={styles.closeBtn} onClick={() => setActiveLedger(null)}>&times;</button>
+                        </div>
+                        {ledgerLoading ? (
+                            <p>Loading history...</p>
+                        ) : (
+                            <div className={styles.ledgerHistory}>
+                                <div className={styles.passbookTableContainer}>
+                                    <table className={styles.table}>
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Reference</th>
+                                                <th>Debit (Purchase)</th>
+                                                <th>Credit (Payment)</th>
+                                                <th>Balance</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {ledgerHistory.map((item, idx) => (
+                                                <tr key={idx} className={item.type === 'payment' ? styles.paymentRow : ''}>
+                                                    <td>{new Date(item.date).toLocaleDateString()}</td>
+                                                    <td>
+                                                        <strong>{item.reference}</strong>
+                                                        {item.status && <span className={styles.statusBadge} style={{ transform: 'scale(0.8)', marginLeft: '5px' }}>{item.status}</span>}
+                                                    </td>
+                                                    <td style={{ color: '#ef4444' }}>{item.type === 'order' ? `₹${item.amount}` : '-'}</td>
+                                                    <td style={{ color: '#10b981' }}>{item.type === 'payment' ? `₹${item.amount}` : '-'}</td>
+                                                    <td style={{ fontWeight: 'bold' }}>₹{item.balance_after}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div className={styles.ledgerFooter} style={{ marginTop: '20px', padding: '15px', background: '#f8fafc', borderRadius: '8px', display: 'flex', justifyContent: 'space-between' }}>
+                                    <strong>Current Net Payable:</strong>
+                                    <strong style={{ fontSize: '18px', color: activeLedger.balance > 0 ? '#ef4444' : '#10b981' }}>
+                                        ₹{activeLedger.balance}
+                                    </strong>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
