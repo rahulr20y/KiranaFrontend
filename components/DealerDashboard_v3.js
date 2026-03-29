@@ -5,6 +5,7 @@ import toastStyles from '../styles/toast.module.css';
 import NotificationToast from './NotificationToast';
 import { useNotifications } from '../lib/notificationContext';
 import NotificationBell from './NotificationBell';
+import DealerAnalytics from './DealerAnalytics';
 
 export default function DealerDashboard_v3() {
     const [products, setProducts] = useState([]);
@@ -42,6 +43,7 @@ export default function DealerDashboard_v3() {
     const [activeLedger, setActiveLedger] = useState(null);
     const [ledgerHistory, setLedgerHistory] = useState([]);
     const [ledgerLoading, setLedgerLoading] = useState(false);
+    const [stats, setStats] = useState(null);
     const fileInputRef = useRef(null);
 
     useEffect(() => {
@@ -52,7 +54,7 @@ export default function DealerDashboard_v3() {
         try {
             setLoading(true);
             const { shopkeepersAPI, ordersAPI } = await import('../lib/api'); // Dynamic import to avoid missing export issues if any
-            const [productsRes, profileRes, broadcastsRes, notificationsRes, khataRes, shopkeepersRes, ordersRes] = await Promise.all([
+            const [productsRes, profileRes, broadcastsRes, notificationsRes, khataRes, shopkeepersRes, ordersRes, statsRes] = await Promise.all([
                 productsAPI.myProducts(),
                 dealersAPI.myProfile(),
                 notificationsAPI.listBroadcasts(),
@@ -60,6 +62,7 @@ export default function DealerDashboard_v3() {
                 paymentsAPI.getSummary(),
                 shopkeepersAPI.listShopkeepers(),
                 ordersAPI.listOrders(),
+                ordersAPI.stats(),
             ]);
             setProducts(productsRes.data.results || productsRes.data || []);
             setDealerProfile(profileRes.data);
@@ -68,6 +71,7 @@ export default function DealerDashboard_v3() {
             setKhataSummary(khataRes.data);
             setShopkeepers(shopkeepersRes.data.results || shopkeepersRes.data || []);
             setOrders(ordersRes.data.results || ordersRes.data || []);
+            setStats(statsRes.data);
             
             // Auto-toast for low stock if we just fetched
             const lowStockProducts = (productsRes.data.results || productsRes.data || []).filter(p => p.stock_quantity <= p.low_stock_threshold);
@@ -284,6 +288,12 @@ export default function DealerDashboard_v3() {
                         onClick={() => setActiveTab('notifications')}
                     >
                         Notifications {notifications.filter(n => !n.is_read).length > 0 && `(${notifications.filter(n => !n.is_read).length})`}
+                    </button>
+                    <button
+                        className={`${styles.tab} ${activeTab === 'analytics' ? styles.active : ''}`}
+                        onClick={() => setActiveTab('analytics')}
+                    >
+                        📈 Analytics
                     </button>
                     <button
                         className={`${styles.tab} ${activeTab === 'khata' ? styles.active : ''}`}
@@ -833,6 +843,8 @@ export default function DealerDashboard_v3() {
                             )}
                         </div>
                     )}
+
+                    {activeTab === 'analytics' && <DealerAnalytics stats={stats} />}
                 </div>
             </div>
             {/* Notification Toasts */}
