@@ -3,6 +3,8 @@ import { productsAPI, dealersAPI, notificationsAPI, paymentsAPI } from '../lib/a
 import styles from '../styles/dashboard.module.css';
 import toastStyles from '../styles/toast.module.css';
 import NotificationToast from './NotificationToast';
+import { useNotifications } from '../lib/notificationContext';
+import NotificationBell from './NotificationBell';
 
 export default function DealerDashboard_v3() {
     const [products, setProducts] = useState([]);
@@ -18,7 +20,7 @@ export default function DealerDashboard_v3() {
     });
     const [isEditingProfile, setIsEditingProfile] = useState(false);
     const [broadcasts, setBroadcasts] = useState([]);
-    const [notifications, setNotifications] = useState([]);
+    const { notifications, setNotifications, markAsRead } = useNotifications();
     const [shopkeepers, setShopkeepers] = useState([]);
     const [khataSummary, setKhataSummary] = useState(null);
     const [showAddBroadcast, setShowAddBroadcast] = useState(false);
@@ -224,8 +226,13 @@ export default function DealerDashboard_v3() {
     return (
         <div className={styles.dashboardContainer}>
             <div className={styles.dashboardHeader}>
-                <h1>Dealer Dashboard <span style={{ fontSize: '10px', opacity: 0.5 }}>[v1.7 FORCED]</span></h1>
-                <p>Welcome, {dealerProfile?.business_name || 'Dealer'}</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                    <div>
+                        <h1>Dealer Dashboard <span style={{ fontSize: '10px', opacity: 0.5 }}>[v1.7 FORCED]</span></h1>
+                        <p>Welcome, {dealerProfile?.business_name || 'Dealer'}</p>
+                    </div>
+                    <NotificationBell />
+                </div>
             </div>
 
             {error && <div className={styles.errorAlert}>{error}</div>}

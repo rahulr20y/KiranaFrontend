@@ -1,0 +1,147 @@
+.bellContainer {
+    position: relative;
+    display: inline-block;
+}
+
+.bellButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 24px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #4b5563;
+    transition: color 0.2s;
+}
+
+.bellButton:hover {
+    color: #1e3a8a;
+}
+
+.badge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: #ef4444;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+}
+
+.dropdown {
+    position: absolute;
+    top: 50px;
+    right: 0;
+    width: 320px;
+    max-height: 480px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #e5e7eb;
+}
+
+.header {
+    padding: 15px;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.markAllRead {
+    background: none;
+    border: none;
+    color: #3b82f6;
+    font-size: 12px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.list {
+    overflow-y: auto;
+    flex: 1;
+}
+
+.empty {
+    padding: 30px;
+    text-align: center;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.item {
+    padding: 15px;
+    border-bottom: 1px solid #f3f4f6;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.item:hover {
+    background: #f0f7ff;
+}
+
+.itemHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 4px;
+}
+
+.itemHeader strong {
+    font-size: 14px;
+    color: #111827;
+}
+
+.time {
+    font-size: 11px;
+    color: #9ca3af;
+}
+
+.item p {
+    margin: 0;
+    font-size: 13px;
+    color: #4b5563;
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.unread {
+    background: #eff6ff;
+}
+
+.unread::before {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 3px;
+    background: #3b82f6;
+    border-radius: 50%;
+}

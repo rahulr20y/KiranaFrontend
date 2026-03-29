@@ -3,6 +3,8 @@ import { shopkeepersAPI, dealersAPI, ordersAPI, notificationsAPI, paymentsAPI } 
 import styles from '../styles/dashboard.module.css';
 import toastStyles from '../styles/toast.module.css';
 import NotificationToast from './NotificationToast';
+import { useNotifications } from '../lib/notificationContext';
+import NotificationBell from './NotificationBell';
 
 export default function ShopkeeperDashboard_v3() {
     const [shopkeeperProfile, setShopkeeperProfile] = useState(null);
@@ -10,7 +12,7 @@ export default function ShopkeeperDashboard_v3() {
     const [allDealers, setAllDealers] = useState([]);
     const [recentOrders, setRecentOrders] = useState([]);
     const [broadcasts, setBroadcasts] = useState([]);
-    const [notifications, setNotifications] = useState([]);
+    const { notifications, setNotifications, markAsRead } = useNotifications();
     const [khataSummary, setKhataSummary] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -203,8 +205,13 @@ export default function ShopkeeperDashboard_v3() {
     return (
         <div className={styles.dashboardContainer}>
             <div className={styles.dashboardHeader}>
-                <h1>Shopkeeper Dashboard</h1>
-                <p>Welcome, {shopkeeperProfile?.shop_name || 'Shopkeeper'}</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                    <div>
+                        <h1>Shopkeeper Dashboard</h1>
+                        <p>Welcome, {shopkeeperProfile?.shop_name || 'Shopkeeper'}</p>
+                    </div>
+                    <NotificationBell />
+                </div>
             </div>
 
             {error && <div className={styles.errorAlert}>{error}</div>}
