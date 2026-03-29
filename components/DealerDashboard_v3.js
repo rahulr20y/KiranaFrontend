@@ -11,12 +11,12 @@ export default function DealerDashboard_v3() {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [activeTab, setActiveTab] = useState('products');
-    const [profileFormData, setProfileFormData] = useState(null); // Initialize as null to track if set
     const [profileFormData, setProfileFormData] = useState({
         business_name: '',
         business_category: '',
         gst_number: '',
     });
+    const [isEditingProfile, setIsEditingProfile] = useState(false);
     const [broadcasts, setBroadcasts] = useState([]);
     const [notifications, setNotifications] = useState([]);
     const [shopkeepers, setShopkeepers] = useState([]);
@@ -588,7 +588,11 @@ export default function DealerDashboard_v3() {
                                 <form className={styles.editForm} onSubmit={async (e) => {
                                     e.preventDefault();
                                     try {
-                                        const res = await dealersAPI.updateProfile(profileFormData);
+                                        // Sanitize data before sending
+                                        const sanitizedData = { ...profileFormData };
+                                        if (sanitizedData.business_category === '') sanitizedData.business_category = 'General';
+                                        
+                                        const res = await dealersAPI.updateProfile(sanitizedData);
                                         setDealerProfile(res.data);
                                         setIsEditingProfile(false);
                                         addToast('Profile updated successfully!', 'success');

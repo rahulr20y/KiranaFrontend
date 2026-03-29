@@ -1,0 +1,86 @@
+
+DevTools listening on ws://127.0.0.1:37703/devtools/browser/eca180a4-e152-43e9-a050-7b3525206354
+Couldn't find tsconfig.json. tsconfig-paths will be skipped
+Warning: We failed to trash the existing run results.
+
+This error will not affect or change the exit code.
+
+Error: EACCES: permission denied, unlink '/home/rahul/Desktop/Kirana/frontend/cypress/screenshots/google_auth.cy.js/Google Auth — Backend API -- POST usersgoogle-auth returns 400 when id_token is missing (failed).png'
+
+================================================================================
+
+  (Run Starting)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Cypress:        13.6.4                                                                         │
+  │ Browser:        Electron 114 (headless)                                                        │
+  │ Node Version:   v20.20.1 (/home/rahul/.nvm/versions/node/v20.20.1/bin/node)                    │
+  │ Specs:          1 found (payment_gateway.cy.js)                                                │
+  │ Searched:       cypress/e2e/payment_gateway.cy.js                                              │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                    
+  Running:  payment_gateway.cy.js                                                           (1 of 1)
+
+
+  Payment Gateway Integration: Razorpay Flow
+    1) should initiate digital payment from Ledger and handle Razorpay mock checkout
+
+
+  0 passing (51s)
+  1 failing
+
+  1) Payment Gateway Integration: Razorpay Flow
+       should initiate digital payment from Ledger and handle Razorpay mock checkout:
+
+      Timed out retrying after 10000ms
+      + expected - actual
+
+      -404
+      +200
+      
+      at Context.eval (webpack://kirana-frontend/./cypress/e2e/payment_gateway.cy.js:141:57)
+
+
+
+
+  (Results)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        1                                                                                │
+  │ Passing:      0                                                                                │
+  │ Failing:      1                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  1                                                                                │
+  │ Video:        true                                                                             │
+  │ Duration:     50 seconds                                                                       │
+  │ Spec Ran:     payment_gateway.cy.js                                                            │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+  (Screenshots)
+
+  -  /home/rahul/Desktop/Kirana/frontend/cypress/screenshots/payment_gateway.cy.js/Pa     (1280x720)
+     yment Gateway Integration Razorpay Flow -- should initiate digital payment from                
+     Ledger and handle Razorpay mock checkout (failed).png                                          
+
+
+  (Video)
+
+  -  Video output: /home/rahul/Desktop/Kirana/frontend/cypress/videos/payment_gateway.cy.js.mp4
+
+
+================================================================================
+
+  (Run Finished)
+
+
+       Spec                                              Tests  Passing  Failing  Pending  Skipped  
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ ✖  payment_gateway.cy.js                    00:50        1        -        1        -        - │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+    ✖  1 of 1 failed (100%)                     00:50        1        -        1        -        -  
+

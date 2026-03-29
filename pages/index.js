@@ -16,6 +16,20 @@ export default function Home() {
                 <meta property="og:title" content="Kirana - Connect Dealers with Shopkeepers" />
                 <meta property="og:description" content="Simplify your supply chain with Kirana. Direct connections between dealers and shopkeepers." />
                 <meta property="og:type" content="website" />
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{
+                        __html: JSON.stringify({
+                            "@context": "https://schema.org",
+                            "@type": "WebApplication",
+                            "name": "Kirana",
+                            "url": "https://kirana.ai",
+                            "description": "The platform connecting product dealers with small shopkeepers.",
+                            "applicationCategory": "BusinessApplication",
+                            "operatingSystem": "All"
+                        })
+                    }}
+                />
             </Head>
 
             <Navbar />

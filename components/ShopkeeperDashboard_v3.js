@@ -545,7 +545,12 @@ export default function ShopkeeperDashboard_v3() {
                                 <form className={styles.editForm} onSubmit={async (e) => {
                                     e.preventDefault();
                                     try {
-                                        const res = await shopkeepersAPI.updateProfile(profileFormData);
+                                        // Sanitize data before sending
+                                        const sanitizedData = { ...profileFormData };
+                                        if (sanitizedData.monthly_budget === '') sanitizedData.monthly_budget = 0;
+                                        if (sanitizedData.business_type === '') sanitizedData.business_type = 'Retail';
+                                        
+                                        const res = await shopkeepersAPI.updateProfile(sanitizedData);
                                         setShopkeeperProfile(res.data);
                                         setIsEditingProfile(false);
                                         addToast('Profile updated successfully!', 'success');
