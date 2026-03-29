@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import styles from '../styles/landing.module.css'
 
 export default function Footer() {
@@ -15,28 +16,28 @@ export default function Footer() {
                         <ul className={styles.footerLinks}>
                             <li><a href="#features">Features</a></li>
                             <li><a href="#roles">For Dealers & Shopkeepers</a></li>
-                            <li><a href="#">Pricing</a></li>
-                            <li><a href="#">Blog</a></li>
+                            <li><a href="#features">Pricing</a></li>
+                            <li><Link href="/">Blog</Link></li>
                         </ul>
                     </div>
 
-                    <div>
+                    <div id="contact">
                         <h3>Support</h3>
                         <ul className={styles.footerLinks}>
-                            <li><a href="#">Help Center</a></li>
-                            <li><a href="#">Contact Us</a></li>
-                            <li><a href="#">Documentation</a></li>
-                            <li><a href="#">Status</a></li>
+                            <li><Link href="/">Help Center</Link></li>
+                            <li><a href="mailto:support@kirana.example.com">Contact Us</a></li>
+                            <li><Link href="/">Documentation</Link></li>
+                            <li><Link href="/">Status</Link></li>
                         </ul>
                     </div>
 
                     <div>
                         <h3>Legal</h3>
                         <ul className={styles.footerLinks}>
-                            <li><a href="#">Privacy Policy</a></li>
-                            <li><a href="#">Terms of Service</a></li>
-                            <li><a href="#">Cookie Policy</a></li>
-                            <li><a href="#">Security</a></li>
+                            <li><Link href="/">Privacy Policy</Link></li>
+                            <li><Link href="/">Terms of Service</Link></li>
+                            <li><Link href="/">Cookie Policy</Link></li>
+                            <li><Link href="/">Security</Link></li>
                         </ul>
                     </div>
                 </div>

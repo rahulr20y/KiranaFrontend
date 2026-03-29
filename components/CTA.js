@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import styles from '../styles/landing.module.css'
 
 export default function CTA() {
@@ -8,7 +9,9 @@ export default function CTA() {
                 <p className={styles.ctaSubtitle}>
                     Join thousands of shopkeepers and dealers already using Kirana
                 </p>
-                <button className={styles.ctaBtn}>Start Free Trial Today</button>
+                <Link href="/signup">
+                    <button className={styles.ctaBtn}>Start Free Trial Today</button>
+                </Link>
             </div>
         </section>
     )

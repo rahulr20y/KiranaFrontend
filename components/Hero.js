@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import styles from '../styles/landing.module.css'
 
 export default function Hero() {
@@ -28,8 +29,12 @@ export default function Hero() {
                     </div>
 
                     <div className={styles.ctaButtons}>
-                        <button className={styles.primaryBtn}>Get Started Now</button>
-                        <button className={styles.secondaryBtn}>Learn More</button>
+                        <Link href="/signup">
+                            <button className={styles.primaryBtn}>Get Started Now</button>
+                        </Link>
+                        <a href="#features">
+                            <button className={styles.secondaryBtn}>Learn More</button>
+                        </a>
                     </div>
                 </div>
             </div>

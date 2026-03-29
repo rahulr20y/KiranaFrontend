@@ -435,7 +435,14 @@ export default function ShopkeeperDashboard_v3() {
                                 <h2>Business Profile</h2>
                                 <button 
                                     className={styles.secondaryBtn}
-                                    onClick={() => setIsEditingProfile(!isEditingProfile)}
+                                    onClick={() => {
+                                        setProfileFormData({
+                                            shop_name: shopkeeperProfile?.shop_name || '',
+                                            business_type: shopkeeperProfile?.business_type || 'Retail',
+                                            monthly_budget: shopkeeperProfile?.monthly_budget || '0',
+                                        });
+                                        setIsEditingProfile(!isEditingProfile);
+                                    }}
                                 >
                                     {isEditingProfile ? 'Cancel' : 'Edit Profile'}
                                 </button>
@@ -448,15 +455,17 @@ export default function ShopkeeperDashboard_v3() {
                                         const res = await shopkeepersAPI.updateProfile(profileFormData);
                                         setShopkeeperProfile(res.data);
                                         setIsEditingProfile(false);
-                                        alert('Profile updated successfully!');
+                                        addToast('Profile updated successfully!', 'success');
+                                        setError('');
                                     } catch (err) {
-                                        alert('Failed to update profile');
+                                        setError(err.response?.data?.shop_name?.[0] || 'Failed to update profile');
                                     }
                                 }}>
                                     <div className={styles.formGroup}>
                                         <label>Shop Name</label>
                                         <input 
                                             type="text" 
+                                            name="shop_name"
                                             value={profileFormData.shop_name}
                                             onChange={(e) => setProfileFormData({...profileFormData, shop_name: e.target.value})}
                                         />
@@ -465,6 +474,7 @@ export default function ShopkeeperDashboard_v3() {
                                         <label>Business Type</label>
                                         <input 
                                             type="text" 
+                                            name="business_type"
                                             value={profileFormData.business_type}
                                             onChange={(e) => setProfileFormData({...profileFormData, business_type: e.target.value})}
                                         />
@@ -473,6 +483,7 @@ export default function ShopkeeperDashboard_v3() {
                                         <label>Monthly Budget (₹)</label>
                                         <input 
                                             type="number" 
+                                            name="monthly_budget"
                                             value={profileFormData.monthly_budget}
                                             onChange={(e) => setProfileFormData({...profileFormData, monthly_budget: e.target.value})}
                                         />

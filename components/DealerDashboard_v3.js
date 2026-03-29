@@ -11,7 +11,7 @@ export default function DealerDashboard_v3() {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [activeTab, setActiveTab] = useState('products');
-    const [isEditingProfile, setIsEditingProfile] = useState(false);
+    const [profileFormData, setProfileFormData] = useState(null); // Initialize as null to track if set
     const [profileFormData, setProfileFormData] = useState({
         business_name: '',
         business_category: '',
@@ -180,7 +180,7 @@ export default function DealerDashboard_v3() {
             };
             
             await ordersAPI.createOrder(orderData);
-            setSuccess('Sale recorded successfully!');
+            addToast('Sale recorded successfully!', 'success');
             setShowNewSale(false);
             setSaleFormData({ shopkeeper_id: '', product_id: '', quantity: 1, notes: '' });
             fetchData();
@@ -332,6 +332,7 @@ export default function DealerDashboard_v3() {
                                         <div className={styles.formGroup}>
                                             <label>Select Shopkeeper</label>
                                             <select 
+                                                name="shopkeeper_id"
                                                 value={saleFormData.shopkeeper_id}
                                                 onChange={(e) => setSaleFormData({...saleFormData, shopkeeper_id: e.target.value})}
                                                 required
@@ -345,6 +346,7 @@ export default function DealerDashboard_v3() {
                                         <div className={styles.formGroup}>
                                             <label>Select Product</label>
                                             <select 
+                                                name="product_id"
                                                 value={saleFormData.product_id}
                                                 onChange={(e) => setSaleFormData({...saleFormData, product_id: e.target.value})}
                                                 required
@@ -359,6 +361,7 @@ export default function DealerDashboard_v3() {
                                             <label>Quantity</label>
                                             <input 
                                                 type="number" 
+                                                name="quantity"
                                                 value={saleFormData.quantity}
                                                 onChange={(e) => setSaleFormData({...saleFormData, quantity: e.target.value})}
                                                 min="1"
@@ -568,7 +571,14 @@ export default function DealerDashboard_v3() {
                                 <h2>Business Profile</h2>
                                 <button 
                                     className={styles.secondaryBtn}
-                                    onClick={() => setIsEditingProfile(!isEditingProfile)}
+                                    onClick={() => {
+                                        setProfileFormData({
+                                            business_name: dealerProfile?.business_name || '',
+                                            business_category: dealerProfile?.business_category || 'General',
+                                            gst_number: dealerProfile?.gst_number || '',
+                                        });
+                                        setIsEditingProfile(!isEditingProfile);
+                                    }}
                                 >
                                     {isEditingProfile ? 'Cancel' : 'Edit Profile'}
                                 </button>
@@ -581,10 +591,10 @@ export default function DealerDashboard_v3() {
                                         const res = await dealersAPI.updateProfile(profileFormData);
                                         setDealerProfile(res.data);
                                         setIsEditingProfile(false);
-                                        setSuccess('Profile updated successfully!');
-                                        setTimeout(() => setSuccess(''), 3000);
+                                        addToast('Profile updated successfully!', 'success');
+                                        setError('');
                                     } catch (err) {
-                                        setError('Failed to update profile');
+                                        setError(err.response?.data?.business_name?.[0] || 'Failed to update profile');
                                     }
                                 }}>
                                     <div className={styles.formGroup}>
@@ -832,7 +842,7 @@ export default function DealerDashboard_v3() {
                     <div className={styles.modal} style={{ maxWidth: '800px', width: '90%' }}>
                         <div className={styles.modalHeader}>
                             <h2>Ledger History: {activeLedger.business_name}</h2>
-                            <button className={styles.closeBtn} onClick={() => setActiveLedger(null)}>&times;</button>
+                            <button className={styles.closeBtn} onClick={() => setActiveLedger(null)} aria-label="Close modal">&times;</button>
                         </div>
                         {ledgerLoading ? (
                             <p>Loading history...</p>
