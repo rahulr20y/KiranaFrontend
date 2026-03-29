@@ -118,6 +118,88 @@ export default function ShopkeeperDashboard_v3() {
         }
     };
 
+    const loadRazorpay = () => {
+        return new Promise((resolve) => {
+            const script = document.createElement('script');
+            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+            script.onload = () => resolve(true);
+            script.onerror = () => resolve(false);
+            document.body.appendChild(script);
+        });
+    };
+
+    const handleRazorpayPayment = async (ledgerEntry, customAmount = null) => {
+        const amountToPay = customAmount || ledgerEntry.balance;
+        if (amountToPay <= 0) {
+            addToast('Nothing to pay for this dealer', 'info');
+            return;
+        }
+
+        try {
+            addToast('Initializing secure payment...', 'info');
+            
+            // 1. Load Razorpay script
+            const resScript = await loadRazorpay();
+            if (!resScript) {
+                addToast('Razorpay SDK failed to load. Are you online?', 'error');
+                return;
+            }
+
+            // 2. Create order on backend
+            // For now, we use current user's info
+            const orderRes = await paymentsAPI.createRazorpayOrder({
+                amount: amountToPay,
+                dealer_id: ledgerEntry.dealer_id
+            });
+
+            const { razorpay_order_id, amount } = orderRes.data;
+
+            // 3. Open Razorpay Checkout
+            // We'll use a test key or environment variable
+            const options = {
+                key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_simulated',
+                amount: amount * 100, // paise
+                currency: 'INR',
+                name: 'Kirana Platform',
+                description: `Payment to ${ledgerEntry.business_name}`,
+                order_id: razorpay_order_id,
+                handler: async function (response) {
+                    try {
+                        addToast('Verifying payment...', 'info');
+                        // 4. Verify signature on backend
+                        await paymentsAPI.verifyPayment({
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature
+                        });
+                        
+                        addToast('Payment Successful!', 'success');
+                        fetchData();
+                        if (activeLedger && activeLedger.dealer_id === ledgerEntry.dealer_id) {
+                            handleViewLedger(ledgerEntry);
+                        }
+                    } catch (err) {
+                        addToast('Payment verification failed', 'error');
+                    }
+                },
+                prefill: {
+                    name: shopkeeperProfile?.shop_name,
+                    email: shopkeeperProfile?.user?.email,
+                },
+                theme: {
+                    color: '#667eea'
+                }
+            };
+
+            const paymentObject = new window.Razorpay(options);
+            paymentObject.open();
+
+        } catch (err) {
+            console.error(err);
+            addToast('Failed to initiate payment', 'error');
+        }
+    };
+
     return (
         <div className={styles.dashboardContainer}>
             <div className={styles.dashboardHeader}>
@@ -388,33 +470,44 @@ export default function ShopkeeperDashboard_v3() {
                                                     ₹{entry.balance}
                                                 </td>
                                                 <td>
-                                                    <button 
-                                                        className={styles.actionButton}
-                                                        onClick={() => {
-                                                            const amount = prompt(`Enter amount paid to ${entry.business_name}:`);
-                                                            if (amount && !isNaN(amount)) {
-                                                                paymentsAPI.createPayment({
-                                                                    shopkeeper: shopkeeperProfile.user.id,
-                                                                    dealer: entry.dealer_id,
-                                                                    amount: parseFloat(amount),
-                                                                    payment_method: 'cash',
-                                                                    notes: 'Manual entry from Ledger'
-                                                                }).then(() => {
-                                                                    fetchData();
-                                                                    addToast('Payment recorded!', 'success');
-                                                                });
-                                                            }
-                                                        }}
-                                                    >
-                                                        Record Payment
-                                                    </button>
-                                                    <button 
-                                                        className={styles.textBtn}
-                                                        onClick={() => handleViewLedger(entry)}
-                                                        style={{ marginLeft: '5px' }}
-                                                    >
-                                                        Details →
-                                                    </button>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                                        <button 
+                                                            className={styles.primaryBtn}
+                                                            onClick={() => handleRazorpayPayment(entry)}
+                                                            style={{ fontSize: '11px', padding: '5px 10px' }}
+                                                            disabled={entry.balance <= 0}
+                                                        >
+                                                            💳 Pay Digitally
+                                                        </button>
+                                                        <button 
+                                                            className={styles.actionButton}
+                                                            onClick={() => {
+                                                                const amount = prompt(`Enter cash amount paid to ${entry.business_name}:`);
+                                                                if (amount && !isNaN(amount)) {
+                                                                    paymentsAPI.createPayment({
+                                                                        shopkeeper: shopkeeperProfile.user.id,
+                                                                        dealer: entry.dealer_id,
+                                                                        amount: parseFloat(amount),
+                                                                        payment_method: 'cash',
+                                                                        notes: 'Manual entry from Ledger'
+                                                                    }).then(() => {
+                                                                        fetchData();
+                                                                        addToast('Cash payment recorded!', 'success');
+                                                                    });
+                                                                }
+                                                            }}
+                                                            style={{ fontSize: '11px', padding: '5px 10px' }}
+                                                        >
+                                                            💵 Record Cash
+                                                        </button>
+                                                        <button 
+                                                            className={styles.textBtn}
+                                                            onClick={() => handleViewLedger(entry)}
+                                                            style={{ fontSize: '11px' }}
+                                                        >
+                                                            Details →
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}
