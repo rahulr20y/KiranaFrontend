@@ -42,6 +42,7 @@ export default function ShopkeeperDashboard_v3() {
         reason: '',
         max_qty: 1
     });
+    const [suggestions, setSuggestions] = useState([]);
 
     useEffect(() => {
         fetchData();
@@ -59,7 +60,8 @@ export default function ShopkeeperDashboard_v3() {
                 notificationsAPI.listBroadcasts(),
                 notificationsAPI.listPersonal(),
                 paymentsAPI.getSummary(),
-                returnsAPI.listReturns()
+                returnsAPI.listReturns(),
+                ordersAPI.getSuggestions()
             ]);
             setShopkeeperProfile(profileRes.data);
             setProfileFormData({
@@ -74,6 +76,7 @@ export default function ShopkeeperDashboard_v3() {
             setNotifications(notificationsRes.data.results || notificationsRes.data || []);
             setKhataSummary(khataRes.data);
             setMyReturns(returnsRes.data || []);
+            setSuggestions(suggestionsRes.data || []);
             setError('');
         } catch (err) {
             setError('Failed to load shopkeeper information');
@@ -345,46 +348,72 @@ export default function ShopkeeperDashboard_v3() {
                 <div className={styles.tabContent}>
                     {activeTab === 'overview' && (
                         <div className={styles.overviewTab}>
-                            <h2>Business Overview</h2>
-                            <div className={styles.overviewGrid}>
-                                <div className={styles.overviewCard}>
-                                    <h3>📝 Recent Orders</h3>
-                                    {recentOrders && recentOrders.length > 0 ? (
-                                        <div className={styles.recentList}>
-                                            {recentOrders.slice(0, 3).map(order => (
-                                                <div key={order.id} className={styles.recentItem}>
-                                                    <span>Order #{order.order_number?.substring(0, 8) || order.id}</span>
-                                                    <span className={styles.statusBadge}>{order.status}</span>
-                                                    <span>₹{Number(order.net_amount || order.total_amount).toLocaleString()}</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <p className={styles.emptyMessage}>No recent orders</p>
-                                    )}
+                             {suggestions && suggestions.length > 0 && (
+                                <div className={styles.suggestionsBanner} style={{ marginBottom: '20px', padding: '15px', background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)', borderRadius: '12px', border: '1px solid #bfdbfe' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+                                        <span style={{ fontSize: '20px', marginRight: '10px' }}>📉</span>
+                                        <h3 style={{ margin: 0, fontSize: '16px', color: '#1e40af' }}>Smart Stock Suggestions</h3>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '5px' }}>
+                                        {suggestions.map((s, idx) => (
+                                            <div key={idx} style={{ minWidth: '200px', background: '#fff', padding: '10px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+                                                <div style={{ fontSize: '14px', fontWeight: 'bold' }}>{s.name}</div>
+                                                <div style={{ fontSize: '11px', color: '#64748b', margin: '4px 0' }}>{s.reason}</div>
+                                                <button 
+                                                    className={styles.secondaryBtn}
+                                                    style={{ width: '100%', fontSize: '12px', padding: '4px 0' }}
+                                                    onClick={() => addToast(`Feature coming soon: Quick Restock for ${s.name}`, 'info')}
+                                                >
+                                                    🛒 Quick Restock
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
-                                <div className={styles.overviewCard}>
-                                    <h3>📣 Latest Broadcasts</h3>
-                                    {broadcasts && broadcasts.length > 0 ? (
-                                        <div className={styles.recentList}>
-                                            {broadcasts.slice(0, 3).map(broadcast => (
-                                                <div key={broadcast.id} className={`${styles.recentItem} ${styles['type_' + broadcast.notification_type]}`}>
-                                                    <div className={styles.recentItemMain}>
-                                                        <strong>{broadcast.business_name}:</strong> {broadcast.title}
+                            )}
+
+                            <div className={styles.statsGrid}>
+                                <h2>Business Overview</h2>
+                                <div className={styles.overviewGrid}>
+                                    <div className={styles.overviewCard}>
+                                        <h3>📝 Recent Orders</h3>
+                                        {recentOrders && recentOrders.length > 0 ? (
+                                            <div className={styles.recentList}>
+                                                {recentOrders.slice(0, 3).map(order => (
+                                                    <div key={order.id} className={styles.recentItem}>
+                                                        <span>Order #{order.order_number?.substring(0, 8) || order.id}</span>
+                                                        <span className={styles.statusBadge}>{order.status}</span>
+                                                        <span>₹{Number(order.net_amount || order.total_amount).toLocaleString()}</span>
                                                     </div>
-                                                </div>
-                                            ))}
-                                            <button 
-                                                className={styles.textBtn} 
-                                                onClick={() => setActiveTab('broadcasts')}
-                                                style={{ marginTop: '10px', fontSize: '13px' }}
-                                            >
-                                                View all broadcasts →
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <p className={styles.emptyMessage}>No broadcasts from followed dealers</p>
-                                    )}
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <p className={styles.emptyMessage}>No recent orders</p>
+                                        )}
+                                    </div>
+                                    <div className={styles.overviewCard}>
+                                        <h3>📣 Latest Broadcasts</h3>
+                                        {broadcasts && broadcasts.length > 0 ? (
+                                            <div className={styles.recentList}>
+                                                {broadcasts.slice(0, 3).map(broadcast => (
+                                                    <div key={broadcast.id} className={`${styles.recentItem} ${styles['type_' + broadcast.notification_type]}`}>
+                                                        <div className={styles.recentItemMain}>
+                                                            <strong>{broadcast.business_name}:</strong> {broadcast.title}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                                <button 
+                                                    className={styles.textBtn} 
+                                                    onClick={() => setActiveTab('broadcasts')}
+                                                    style={{ marginTop: '10px', fontSize: '13px' }}
+                                                >
+                                                    View all broadcasts →
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <p className={styles.emptyMessage}>No broadcasts from followed dealers</p>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
