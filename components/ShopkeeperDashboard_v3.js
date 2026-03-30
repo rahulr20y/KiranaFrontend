@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useCart } from '../lib/cartContext';
-import { shopkeepersAPI, dealersAPI, ordersAPI, notificationsAPI, paymentsAPI } from '../lib/api';
+import { shopkeepersAPI, dealersAPI, ordersAPI, notificationsAPI, paymentsAPI, returnsAPI } from '../lib/api';
 import { generateInvoicePDF } from '../lib/invoice';
 import styles from '../styles/dashboard.module.css';
 import toastStyles from '../styles/toast.module.css';
@@ -32,6 +32,16 @@ export default function ShopkeeperDashboard_v3() {
     const [activeLedger, setActiveLedger] = useState(null);
     const [ledgerHistory, setLedgerHistory] = useState([]);
     const [ledgerLoading, setLedgerLoading] = useState(false);
+    const [myReturns, setMyReturns] = useState([]);
+    const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
+    const [returnForm, setReturnForm] = useState({
+        order: null,
+        item: null,
+        product_name: '',
+        quantity: 1,
+        reason: '',
+        max_qty: 1
+    });
 
     useEffect(() => {
         fetchData();
@@ -49,6 +59,7 @@ export default function ShopkeeperDashboard_v3() {
                 notificationsAPI.listBroadcasts(),
                 notificationsAPI.listPersonal(),
                 paymentsAPI.getSummary(),
+                returnsAPI.listReturns()
             ]);
             setShopkeeperProfile(profileRes.data);
             setProfileFormData({
@@ -62,6 +73,7 @@ export default function ShopkeeperDashboard_v3() {
             setBroadcasts(broadcastsRes.data.results || broadcastsRes.data || []);
             setNotifications(notificationsRes.data.results || notificationsRes.data || []);
             setKhataSummary(khataRes.data);
+            setMyReturns(returnsRes.data || []);
             setError('');
         } catch (err) {
             setError('Failed to load shopkeeper information');
@@ -231,6 +243,30 @@ export default function ShopkeeperDashboard_v3() {
         }
     };
 
+    const handleOpenReturnForm = (order, item) => {
+        setReturnForm({
+            order: order.id,
+            item: item.id,
+            product_name: item.product_name,
+            quantity: 1,
+            reason: '',
+            max_qty: item.quantity
+        });
+        setIsReturnModalOpen(true);
+    };
+
+    const handleSubmitReturn = async (e) => {
+        e.preventDefault();
+        try {
+            await returnsAPI.createReturn(returnForm);
+            addToast('Return request submitted!', 'success');
+            setIsReturnModalOpen(false);
+            fetchData();
+        } catch (err) {
+            addToast(err.response?.data?.error || 'Failed to submit return request', 'error');
+        }
+    };
+
     return (
         <div className={styles.dashboardContainer}>
             <div className={styles.dashboardHeader}>
@@ -291,6 +327,12 @@ export default function ShopkeeperDashboard_v3() {
                         onClick={() => setActiveTab('khata')}
                     >
                         Khata (Ledger)
+                    </button>
+                    <button
+                        className={`${styles.tab} ${activeTab === 'returns' ? styles.active : ''}`}
+                        onClick={() => setActiveTab('returns')}
+                    >
+                        Returns
                     </button>
                     <button
                         className={`${styles.tab} ${activeTab === 'profile' ? styles.active : ''}`}
@@ -401,6 +443,22 @@ export default function ShopkeeperDashboard_v3() {
                                             <div className={styles.orderDetails}>
                                                 <p>Dealer: {order.dealer?.business_name || 'N/A'}</p>
                                                 <p>Date: {new Date(order.created_at).toLocaleDateString()}</p>
+                                            </div>
+                                            <div className={styles.orderItemList} style={{ margin: '10px 0', borderTop: '1px solid #eee', paddingTop: '10px' }}>
+                                                {order.items?.map(item => (
+                                                    <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '5px' }}>
+                                                        <span>{item.product_name} x {item.quantity}</span>
+                                                        {order.status === 'delivered' && (
+                                                            <button 
+                                                                className={styles.textBtn} 
+                                                                style={{ color: '#ef4444', height: 'auto', padding: '0' }}
+                                                                onClick={() => handleOpenReturnForm(order, item)}
+                                                            >
+                                                                Report Issue
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                ))}
                                             </div>
                                             <div className={styles.orderTotal}>
                                                 <strong>Total: ₹{Number(order.net_amount || order.total_amount).toLocaleString()}</strong>
@@ -595,6 +653,44 @@ export default function ShopkeeperDashboard_v3() {
                         </div>
                     )}
 
+                    {activeTab === 'returns' && (
+                        <div className={styles.returnsTab}>
+                            <h2>My Return Requests</h2>
+                            {myReturns && myReturns.length > 0 ? (
+                                <div className={styles.returnsList}>
+                                    <table className={styles.table}>
+                                        <thead>
+                                            <tr>
+                                                <th>Reference</th>
+                                                <th>Item</th>
+                                                <th>Qty</th>
+                                                <th>Status</th>
+                                                <th>Notes</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {myReturns.map(ret => (
+                                                <tr key={ret.id}>
+                                                    <td>#{ret.order_number?.substring(0, 8)}</td>
+                                                    <td>{ret.product_name}</td>
+                                                    <td>{ret.quantity}</td>
+                                                    <td>
+                                                        <span className={`${styles.statusBadge} ${styles['status_' + ret.status?.toLowerCase()]}`}>
+                                                            {ret.status}
+                                                        </span>
+                                                    </td>
+                                                    <td>{ret.dealer_notes || ret.reason?.substring(0, 30)}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ) : (
+                                <p className={styles.emptyMessage}>No return requests raised yet.</p>
+                            )}
+                        </div>
+                    )}
+
                     {activeTab === 'profile' && (
                         <div className={styles.profileTab}>
                             <div className={styles.sectionHeader}>
@@ -756,6 +852,47 @@ export default function ShopkeeperDashboard_v3() {
                                 </div>
                             </div>
                         )}
+                    </div>
+                </div>
+            )}
+
+            {/* Return Request Modal */}
+            {isReturnModalOpen && (
+                <div className={styles.modalOverlay}>
+                    <div className={styles.modal}>
+                        <div className={styles.modalHeader}>
+                            <h2>Report Issue: {returnForm.product_name}</h2>
+                            <button className={styles.closeBtn} onClick={() => setIsReturnModalOpen(false)}>&times;</button>
+                        </div>
+                        <form onSubmit={handleSubmitReturn} className={styles.editForm}>
+                            <div className={styles.formGroup}>
+                                <label>Quantity to Return</label>
+                                <input 
+                                    type="number" 
+                                    min="1" 
+                                    max={returnForm.max_qty}
+                                    value={returnForm.quantity}
+                                    onChange={(e) => setReturnForm({...returnForm, quantity: e.target.value})}
+                                    required
+                                />
+                                <small>Max allowed: {returnForm.max_qty}</small>
+                            </div>
+                            <div className={styles.formGroup}>
+                                <label>Reason for Return</label>
+                                <textarea 
+                                    value={returnForm.reason}
+                                    onChange={(e) => setReturnForm({...returnForm, reason: e.target.value})}
+                                    placeholder="e.g. Items were crushed or leaked during transit"
+                                    required
+                                    rows="4"
+                                />
+                            </div>
+                            <div style={{ marginTop: '20px' }}>
+                                <button type="submit" className={styles.primaryBtn} style={{ width: '100%' }}>
+                                    Submit Request
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

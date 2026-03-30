@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { productsAPI, dealersAPI, notificationsAPI, paymentsAPI, ordersAPI, shopkeepersAPI } from '../lib/api';
+import { productsAPI, dealersAPI, notificationsAPI, paymentsAPI, ordersAPI, shopkeepersAPI, returnsAPI } from '../lib/api';
 import styles from '../styles/dashboard.module.css';
 import toastStyles from '../styles/toast.module.css';
 import NotificationToast from './NotificationToast';
@@ -45,6 +45,7 @@ export default function DealerDashboard_v3() {
     const [ledgerHistory, setLedgerHistory] = useState([]);
     const [ledgerLoading, setLedgerLoading] = useState(false);
     const [stats, setStats] = useState(null);
+    const [returns, setReturns] = useState([]);
     const fileInputRef = useRef(null);
 
     useEffect(() => {
@@ -63,6 +64,7 @@ export default function DealerDashboard_v3() {
                 shopkeepersAPI.listShopkeepers(),
                 ordersAPI.listOrders(),
                 ordersAPI.stats(),
+                returnsAPI.listReturns()
             ]);
             setProducts(productsRes.data.results || productsRes.data || []);
             setDealerProfile(profileRes.data);
@@ -72,6 +74,7 @@ export default function DealerDashboard_v3() {
             setShopkeepers(shopkeepersRes.data.results || shopkeepersRes.data || []);
             setOrders(ordersRes.data.results || ordersRes.data || []);
             setStats(statsRes.data);
+            setReturns(returnsRes.data || []);
             
             // Auto-toast for low stock if we just fetched
             const lowStockProducts = (productsRes.data.results || productsRes.data || []).filter(p => p.stock_quantity <= p.low_stock_threshold);
@@ -215,6 +218,35 @@ export default function DealerDashboard_v3() {
         }
     };
 
+    const handleApproveReturn = async (id) => {
+        const notes = prompt('Enter notes for approval (optional):', 'Approved and credited.');
+        try {
+            setLoading(true);
+            await returnsAPI.approveReturn(id, { dealer_notes: notes });
+            addToast('Return approved and amount credited to Khata!', 'success');
+            fetchData();
+        } catch (err) {
+            addToast(err.response?.data?.error || 'Failed to approve return', 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleRejectReturn = async (id) => {
+        const notes = prompt('Reason for rejection (required):');
+        if (!notes) return;
+        try {
+            setLoading(true);
+            await returnsAPI.rejectReturn(id, { dealer_notes: notes });
+            addToast('Return request rejected.', 'info');
+            fetchData();
+        } catch (err) {
+            addToast(err.response?.data?.error || 'Failed to reject return', 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleFormChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({
@@ -320,6 +352,12 @@ export default function DealerDashboard_v3() {
                         onClick={() => setActiveTab('khata')}
                     >
                         Khata (Ledger)
+                    </button>
+                    <button
+                        className={`${styles.tab} ${activeTab === 'returns' ? styles.active : ''}`}
+                        onClick={() => setActiveTab('returns')}
+                    >
+                        Returns {returns.filter(r => r.status === 'pending').length > 0 && `(${returns.filter(r => r.status === 'pending').length})`}
                     </button>
                 </div>
 
@@ -688,6 +726,72 @@ export default function DealerDashboard_v3() {
                         </div>
                     </div>
                 )}
+
+                    {activeTab === 'returns' && (
+                        <div className={styles.returnsTab}>
+                            <div className={styles.sectionHeader}>
+                                <h2>Manage Returns & Claims</h2>
+                                <span className={styles.subtitle}>Handle damaged goods reports from shopkeepers</span>
+                            </div>
+                            {returns && returns.length > 0 ? (
+                                <div className={styles.returnsGrid}>
+                                    <table className={styles.table}>
+                                        <thead>
+                                            <tr>
+                                                <th>Shopkeeper</th>
+                                                <th>Order Reference</th>
+                                                <th>Product</th>
+                                                <th>Qty</th>
+                                                <th>Reason</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {returns.map(ret => (
+                                                <tr key={ret.id}>
+                                                    <td>{ret.shopkeeper_name}</td>
+                                                    <td>#{ret.order_number?.substring(0, 8)}</td>
+                                                    <td>{ret.product_name}</td>
+                                                    <td>{ret.quantity}</td>
+                                                    <td title={ret.reason}>{ret.reason?.substring(0, 50)}...</td>
+                                                    <td>
+                                                        <span className={`${styles.statusBadge} ${styles['status_' + ret.status?.toLowerCase()]}`}>
+                                                            {ret.status}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        {ret.status === 'pending' && (
+                                                            <div style={{ display: 'flex', gap: '5px' }}>
+                                                                <button 
+                                                                    className={styles.btnSmall} 
+                                                                    style={{ background: '#10b981', color: '#fff' }}
+                                                                    onClick={() => handleApproveReturn(ret.id)}
+                                                                >
+                                                                    Approve & Credit
+                                                                </button>
+                                                                <button 
+                                                                    className={styles.btnSmallDanger}
+                                                                    onClick={() => handleRejectReturn(ret.id)}
+                                                                >
+                                                                    Reject
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                        {ret.status !== 'pending' && (
+                                                            <small style={{ color: '#64748b' }}>Processed</small>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ) : (
+                                <p className={styles.emptyMessage}>No return requests to display.</p>
+                            )}
+                        </div>
+                    )}
 
                 {activeTab === 'profile' && (
                         <div className={styles.profileTab}>
