@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
 import { useAuth } from '../lib/authContext';
 import Navbar from '../components/Navbar';
-import DealerDashboard_v3 from '../components/DealerDashboard_v3';
-import ShopkeeperDashboard_v3 from '../components/ShopkeeperDashboard_v3';
+const DealerDashboard_v3 = dynamic(() => import('../components/DealerDashboard_v3'), { ssr: false });
+const ShopkeeperDashboard_v3 = dynamic(() => import('../components/ShopkeeperDashboard_v3'), { ssr: false });
 import styles from '../styles/dashboard.module.css';
 
 export default function Dashboard() {
