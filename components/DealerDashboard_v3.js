@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { productsAPI, dealersAPI, notificationsAPI, paymentsAPI } from '../lib/api';
+import { productsAPI, dealersAPI, notificationsAPI, paymentsAPI, ordersAPI, shopkeepersAPI } from '../lib/api';
 import styles from '../styles/dashboard.module.css';
 import toastStyles from '../styles/toast.module.css';
 import NotificationToast from './NotificationToast';
@@ -53,7 +53,6 @@ export default function DealerDashboard_v3() {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const { shopkeepersAPI, ordersAPI } = await import('../lib/api'); // Dynamic import to avoid missing export issues if any
             const [productsRes, profileRes, broadcastsRes, notificationsRes, khataRes, shopkeepersRes, ordersRes, statsRes] = await Promise.all([
                 productsAPI.myProducts(),
                 dealersAPI.myProfile(),
@@ -122,6 +121,25 @@ export default function DealerDashboard_v3() {
         }
     };
 
+    const handleUpdateStatus = async (orderId, newStatus) => {
+        let otp = null;
+        if (newStatus === 'delivered') {
+            otp = prompt('Enter Secure OTP from Shopkeeper to finalize delivery:');
+            if (!otp) return;
+        }
+
+        try {
+            setLoading(true);
+            await ordersAPI.updateOrderStatus(orderId, { status: newStatus, otp });
+            addToast(`Order status updated to ${newStatus}`, 'success');
+            fetchData();
+        } catch (err) {
+            addToast(err.response?.data?.error || 'Failed to update status', 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleViewLedger = async (shopkeeper) => {
         try {
             setLedgerLoading(true);
@@ -161,6 +179,7 @@ export default function DealerDashboard_v3() {
         stock_quantity: '',
         low_stock_threshold: 10,
         category: '',
+        price_tiers: []
     });
 
     const handleCreateSale = async (e) => {
@@ -456,6 +475,68 @@ export default function DealerDashboard_v3() {
                                                 required
                                             />
                                         </div>
+                                    </div>
+
+                                    <div className={styles.tiersSection} style={{ marginTop: '15px', padding: '15px', background: '#f8fafc', borderRadius: '8px' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                                            <h4>💰 Bulk Tiered Pricing (Optional)</h4>
+                                            <button 
+                                                type="button" 
+                                                className={styles.secondaryBtn} 
+                                                style={{ padding: '4px 8px', fontSize: '12px' }}
+                                                onClick={() => setFormData({...formData, price_tiers: [...formData.price_tiers, { min_quantity: '', price: '' }]})}
+                                            >
+                                                + Add Tier
+                                            </button>
+                                        </div>
+                                        <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '10px' }}>
+                                            Encourage larger orders by offering lower prices for higher quantities. 
+                                            (e.g., Min: 50, Price: 90)
+                                        </p>
+                                        {formData.price_tiers.length > 0 && (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                {formData.price_tiers.map((tier, idx) => (
+                                                    <div key={idx} style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
+                                                        <div style={{ flex: 1 }}>
+                                                            <label style={{ fontSize: '11px' }}>Min Quantity</label>
+                                                            <input 
+                                                                type="number" 
+                                                                value={tier.min_quantity}
+                                                                onChange={(e) => {
+                                                                    const newTiers = [...formData.price_tiers];
+                                                                    newTiers[idx].min_quantity = e.target.value;
+                                                                    setFormData({...formData, price_tiers: newTiers});
+                                                                }}
+                                                                placeholder="50"
+                                                            />
+                                                        </div>
+                                                        <div style={{ flex: 1 }}>
+                                                            <label style={{ fontSize: '11px' }}>Special Price (₹)</label>
+                                                            <input 
+                                                                type="number" 
+                                                                value={tier.price}
+                                                                onChange={(e) => {
+                                                                    const newTiers = [...formData.price_tiers];
+                                                                    newTiers[idx].price = e.target.value;
+                                                                    setFormData({...formData, price_tiers: newTiers});
+                                                                }}
+                                                                placeholder="90"
+                                                            />
+                                                        </div>
+                                                        <button 
+                                                            type="button" 
+                                                            onClick={() => {
+                                                                const newTiers = formData.price_tiers.filter((_, i) => i !== idx);
+                                                                setFormData({...formData, price_tiers: newTiers});
+                                                            }}
+                                                            style={{ padding: '8px', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}
+                                                        >
+                                                            🗑️
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                     <button type="submit" className={styles.primaryBtn}>
                                         Add Product
@@ -818,7 +899,7 @@ export default function DealerDashboard_v3() {
                                         <div key={order.id} className={styles.orderCard}>
                                             <div className={styles.orderHeader}>
                                                 <h3>Order #{order.order_number}</h3>
-                                                <span className={`${styles.orderStatus} ${styles['status_' + order.status]}`}>
+                                                <span className={`${styles.statusBadge} ${styles['status_' + order.status]}`}>
                                                     {order.status}
                                                 </span>
                                             </div>
@@ -828,15 +909,45 @@ export default function DealerDashboard_v3() {
                                                 <p><strong>Items:</strong> {order.items?.length || 0}</p>
                                             </div>
                                             <div className={styles.orderTotal}>
-                                                <strong>Total: ₹{order.total_amount}</strong>
+                                                <strong>Total: ₹{order.net_amount || order.total_amount}</strong>
                                             </div>
-                                            <button 
-                                                className={styles.textBtn}
-                                                style={{marginTop: '10px'}}
-                                                onClick={() => window.print()}
-                                            >
-                                                🖨️ Print Invoice
-                                            </button>
+                                            
+                                            <div style={{ marginTop: '15px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                {order.status === 'pending' && (
+                                                    <button 
+                                                        className={styles.primaryBtn}
+                                                        onClick={() => handleUpdateStatus(order.id, 'confirmed')}
+                                                        style={{ width: '100%', fontSize: '12px' }}
+                                                    >
+                                                        ✅ Confirm Order
+                                                    </button>
+                                                )}
+                                                {order.status === 'confirmed' && (
+                                                    <button 
+                                                        className={styles.primaryBtn}
+                                                        onClick={() => handleUpdateStatus(order.id, 'shipped')}
+                                                        style={{ width: '100%', fontSize: '12px', background: '#f59e0b' }}
+                                                    >
+                                                        🚚 Mark as Shipped
+                                                    </button>
+                                                )}
+                                                {order.status === 'shipped' && (
+                                                    <button 
+                                                        className={styles.primaryBtn}
+                                                        onClick={() => handleUpdateStatus(order.id, 'delivered')}
+                                                        style={{ width: '100%', fontSize: '12px', background: '#10b981' }}
+                                                    >
+                                                        🛡️ Mark Delivered (Verify OTP)
+                                                    </button>
+                                                )}
+                                                <button 
+                                                    className={styles.textBtn}
+                                                    style={{ fontSize: '12px' }}
+                                                    onClick={() => window.print()}
+                                                >
+                                                    🖨️ Print Invoice
+                                                </button>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>

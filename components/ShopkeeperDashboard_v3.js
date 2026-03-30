@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import { useCart } from '../lib/cartContext';
 import { shopkeepersAPI, dealersAPI, ordersAPI, notificationsAPI, paymentsAPI } from '../lib/api';
 import styles from '../styles/dashboard.module.css';
 import toastStyles from '../styles/toast.module.css';
@@ -7,6 +9,8 @@ import { useNotifications } from '../lib/notificationContext';
 import NotificationBell from './NotificationBell';
 
 export default function ShopkeeperDashboard_v3() {
+    const router = useRouter();
+    const { loadOrderIntoCart } = useCart();
     const [shopkeeperProfile, setShopkeeperProfile] = useState(null);
     const [preferredDealers, setPreferredDealers] = useState([]);
     const [allDealers, setAllDealers] = useState([]);
@@ -117,6 +121,30 @@ export default function ShopkeeperDashboard_v3() {
             setActiveLedger(null);
         } finally {
             setLedgerLoading(false);
+        }
+    };
+
+    const handleReorder = async (orderId) => {
+        try {
+            setLoading(true);
+            addToast('Loading previous order items...', 'info');
+            const res = await ordersAPI.getOrder(orderId);
+            const orderData = res.data;
+            
+            if (orderData.items && orderData.items.length > 0) {
+                // If the order has items, load them into cart
+                // Extract dealerId from orderData
+                loadOrderIntoCart(orderData.items, orderData.dealer);
+                addToast('Cart populated! Redirecting to checkout...', 'success');
+                router.push('/cart');
+            } else {
+                addToast('Could not find items for this order', 'error');
+            }
+        } catch (err) {
+            console.error(err);
+            addToast('Failed to load order items', 'error');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -376,13 +404,43 @@ export default function ShopkeeperDashboard_v3() {
                                             <div className={styles.orderTotal}>
                                                 <strong>Total: ₹{Number(order.net_amount || order.total_amount).toLocaleString()}</strong>
                                             </div>
-                                            {order.status !== 'cancelled' && (
+                                            {order.status === 'shipped' && order.delivery_otp && (
+                                                <div className={styles.otpBox} style={{
+                                                    marginTop: '10px',
+                                                    padding: '10px',
+                                                    background: '#ebf8ff',
+                                                    border: '1px dashed #3182ce',
+                                                    borderRadius: '8px',
+                                                    textAlign: 'center'
+                                                }}>
+                                                    <span style={{ fontSize: '12px', color: '#2c5282', display: 'block' }}>Delivery OTP</span>
+                                                    <strong style={{ fontSize: '20px', letterSpacing: '4px', color: '#2b6cb0' }}>{order.delivery_otp}</strong>
+                                                </div>
+                                            )}
+                                            {order.status !== 'cancelled' ? (
+                                                <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+                                                    <button 
+                                                        className={styles.primaryBtn}
+                                                        onClick={() => handleReorder(order.id)}
+                                                        style={{ flex: 1, padding: '8px', fontSize: '12px' }}
+                                                    >
+                                                        ⚡ Re-order
+                                                    </button>
+                                                    <button 
+                                                        className={styles.btnSmallDanger}
+                                                        onClick={() => handleCancelOrder(order.id)}
+                                                        style={{ padding: '8px', fontSize: '12px' }}
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                </div>
+                                            ) : (
                                                 <button 
-                                                    className={styles.btnSmallDanger}
-                                                    onClick={() => handleCancelOrder(order.id)}
-                                                    style={{ marginTop: '10px' }}
+                                                    className={styles.primaryBtn}
+                                                    onClick={() => handleReorder(order.id)}
+                                                    style={{ width: '100%', marginTop: '10px', padding: '8px', fontSize: '12px' }}
                                                 >
-                                                    Cancel Order
+                                                    ⚡ Re-order
                                                 </button>
                                             )}
                                         </div>

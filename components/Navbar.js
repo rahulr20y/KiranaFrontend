@@ -1,11 +1,13 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useAuth } from '../lib/authContext'
+import { useCart } from '../lib/cartContext'
 import styles from '../styles/landing.module.css'
 
 export default function Navbar() {
     const router = useRouter()
     const { user, isAuthenticated, logout } = useAuth()
+    const { cartCount } = useCart()
 
     const handleLogout = async () => {
         await logout()
@@ -29,6 +31,29 @@ export default function Navbar() {
                             <>
                                 <li><Link href="/products">Products</Link></li>
                                 <li><Link href="/dashboard">Orders</Link></li>
+                                {user?.user_type === 'shopkeeper' && (
+                                    <li>
+                                        <Link href="/cart">
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
+                                                🛒 Cart 
+                                                {cartCount > 0 && (
+                                                    <span style={{
+                                                        background: '#ef4444',
+                                                        color: 'white',
+                                                        borderRadius: '50%',
+                                                        padding: '2px 6px',
+                                                        fontSize: '10px',
+                                                        fontWeight: 'bold',
+                                                        minWidth: '18px',
+                                                        textAlign: 'center'
+                                                    }}>
+                                                        {cartCount}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </Link>
+                                    </li>
+                                )}
                             </>
                         )}
                         {!isAuthenticated && (

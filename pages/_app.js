@@ -1,6 +1,7 @@
 import '../styles/global.css'
 import { AuthProvider } from '../lib/authContext'
 import { NotificationProvider } from '../lib/notificationContext'
+import { CartProvider } from '../lib/cartContext'
 import Head from 'next/head'
 import { useEffect } from 'react'
 
@@ -22,16 +23,18 @@ function MyApp({ Component, pageProps }) {
 
     return (
         <AuthProvider>
-            <NotificationProvider>
-                <Head>
-                    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
-                    <link rel="manifest" href="/manifest.json" />
-                    <meta name="theme-color" content="#1e40af" />
-                    <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
-                    <title>Kirana - Smart Dealer Network</title>
-                </Head>
-                <Component {...pageProps} />
-            </NotificationProvider>
+            <CartProvider>
+                <NotificationProvider>
+                    <Head>
+                        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+                        <link rel="manifest" href="/manifest.json" />
+                        <meta name="theme-color" content="#1e40af" />
+                        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+                        <title>Kirana - Smart Dealer Network</title>
+                    </Head>
+                    <Component {...pageProps} />
+                </NotificationProvider>
+            </CartProvider>
         </AuthProvider>
     )
 }

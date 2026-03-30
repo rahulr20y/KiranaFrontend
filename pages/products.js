@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../lib/authContext';
 import { productsAPI, categoriesAPI, ordersAPI } from '../lib/api';
+import { useCart } from '../lib/cartContext';
 import Navbar from '../components/Navbar';
 import styles from '../styles/products.module.css';
 
 export default function Products() {
     const router = useRouter();
     const { isAuthenticated, user } = useAuth();
+    const { addToCart } = useCart();
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -72,36 +74,10 @@ export default function Products() {
         setProducts(sorted);
     };
 
-    const handleOrder = async (productId) => {
-        setOrderLoading(true);
-        setOrderError('');
-        setOrderSuccess('');
-        try {
-            // Get the product object to find dealer_id
-            const product = products.find(p => p.id === productId);
-            
-            const orderData = {
-                items: [{ 
-                    product: productId, 
-                    quantity: 1,
-                    product_name: product?.name,
-                    product_price: product?.price,
-                    unit: product?.unit || 'kg',
-                    subtotal: product?.price
-                }],
-                dealer_id: product?.dealer,
-                shipping_address: user?.address || 'Main Street, City',
-                notes: 'Automated order'
-            };
-            
-            await ordersAPI.createOrder(orderData);
-            setOrderSuccess('Order placed successfully!');
-            fetchData(); // Refresh to show updated stock
-        } catch (err) {
-            setOrderError('Failed to place order.');
-        } finally {
-            setOrderLoading(false);
-        }
+    const handleAddToCart = (product) => {
+        addToCart(product, 1);
+        setOrderSuccess(`${product.name} added to cart!`);
+        setTimeout(() => setOrderSuccess(''), 3000);
     };
 
     return (
@@ -177,6 +153,18 @@ export default function Products() {
                                     <div className={styles.productFooter}>
                                         <div className={styles.priceSection}>
                                             <span className={styles.price}>₹{product.price}</span>
+                                            {product.price_tiers && product.price_tiers.length > 0 && (
+                                                <div className={styles.tiersContainer} style={{ marginTop: '5px' }}>
+                                                    <span style={{ fontSize: '10px', color: '#059669', fontWeight: 'bold' }}>Bulk Savings Available:</span>
+                                                    <div style={{ display: 'flex', gap: '5px', overflowX: 'auto', padding: '2px 0' }}>
+                                                        {product.price_tiers.sort((a,b) => a.min_quantity - b.min_quantity).map((tier, i) => (
+                                                            <span key={i} style={{ fontSize: '10px', background: '#ecfdf5', color: '#047857', padding: '2px 4px', borderRadius: '4px', border: '1px solid #d1fae5', whiteSpace: 'nowrap' }}>
+                                                                {tier.min_quantity}+ @ ₹{tier.price}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
                                             {(product.stock_quantity !== undefined && product.stock_quantity !== null) && (
                                                 <span className={styles.stock}>
                                                     Stock: {product.stock_quantity}
@@ -185,10 +173,9 @@ export default function Products() {
                                         </div>
                                         <button
                                             className={styles.addToCartBtn}
-                                            onClick={() => handleOrder(product.id)}
-                                            disabled={orderLoading}
+                                            onClick={() => handleAddToCart(product)}
                                         >
-                                            {orderLoading ? 'Ordering...' : 'Order'}
+                                            Add to Cart
                                         </button>
                                     </div>
                                 </div>
