@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { useCart } from '../lib/cartContext';
 import { shopkeepersAPI, dealersAPI, ordersAPI, notificationsAPI, paymentsAPI, returnsAPI } from '../lib/api';
@@ -46,14 +46,14 @@ export default function ShopkeeperDashboard_v3() {
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [fetchData]);
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         try {
             setLoading(true);
             // Fetch Profile first to trigger backend lazy creation, preventing 404 on followed dealers
             const profileRes = await shopkeepersAPI.myProfile();
-            const [dealersRes, preferredDealersRes, ordersRes, broadcastsRes, notificationsRes, khataRes] = await Promise.all([
+            const [dealersRes, preferredDealersRes, ordersRes, broadcastsRes, notificationsRes, khataRes, returnsRes, suggestionsRes] = await Promise.all([
                 dealersAPI.listDealers(),
                 shopkeepersAPI.getPreferredDealers(),
                 ordersAPI.myOrders(),
@@ -84,12 +84,12 @@ export default function ShopkeeperDashboard_v3() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [setNotifications, addToast]);
 
-    const addToast = (message, type = 'info') => {
+    const addToast = useCallback((message, type = 'info') => {
         const id = Date.now();
         setToasts(prev => [...prev, { id, message, type }]);
-    };
+    }, []);
 
     const removeToast = (id) => {
         setToasts(prev => prev.filter(t => t.id !== id));

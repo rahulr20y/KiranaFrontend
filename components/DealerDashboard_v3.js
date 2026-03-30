@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { productsAPI, dealersAPI, notificationsAPI, paymentsAPI, ordersAPI, shopkeepersAPI, returnsAPI } from '../lib/api';
 import styles from '../styles/dashboard.module.css';
 import toastStyles from '../styles/toast.module.css';
@@ -50,12 +50,12 @@ export default function DealerDashboard_v3() {
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [fetchData]);
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         try {
             setLoading(true);
-            const [productsRes, profileRes, broadcastsRes, notificationsRes, khataRes, shopkeepersRes, ordersRes, statsRes] = await Promise.all([
+            const [productsRes, profileRes, broadcastsRes, notificationsRes, khataRes, shopkeepersRes, ordersRes, statsRes, returnsRes] = await Promise.all([
                 productsAPI.myProducts(),
                 dealersAPI.myProfile(),
                 notificationsAPI.listBroadcasts(),
@@ -93,12 +93,12 @@ export default function DealerDashboard_v3() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [setNotifications, addToast]);
 
-    const addToast = (message, type = 'info') => {
+    const addToast = useCallback((message, type = 'info') => {
         const id = Date.now();
         setToasts(prev => [...prev, { id, message, type }]);
-    };
+    }, []);
 
     const removeToast = (id) => {
         setToasts(prev => prev.filter(t => t.id !== id));

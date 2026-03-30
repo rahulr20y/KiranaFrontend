@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../lib/authContext';
 import { productsAPI, categoriesAPI, ordersAPI } from '../lib/api';
@@ -27,9 +27,9 @@ export default function Products() {
             return;
         }
         fetchData();
-    }, [isAuthenticated, searchTerm, selectedCategory]);
+    }, [isAuthenticated, fetchData]);
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         try {
             setLoading(true);
             const params = {};
@@ -50,7 +50,7 @@ export default function Products() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [searchTerm, selectedCategory]);
 
     const handleSearch = (e) => {
         setSearchTerm(e.target.value);
