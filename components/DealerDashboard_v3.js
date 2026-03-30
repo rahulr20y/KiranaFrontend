@@ -48,9 +48,14 @@ export default function DealerDashboard_v3() {
     const [returns, setReturns] = useState([]);
     const fileInputRef = useRef(null);
 
-    useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+    const addToast = useCallback((message, type = 'info') => {
+        const id = Date.now();
+        setToasts(prev => [...prev, { id, message, type }]);
+    }, []);
+
+    const removeToast = (id) => {
+        setToasts(prev => prev.filter(t => t.id !== id));
+    };
 
     const fetchData = useCallback(async () => {
         try {
@@ -95,14 +100,9 @@ export default function DealerDashboard_v3() {
         }
     }, [setNotifications, addToast]);
 
-    const addToast = useCallback((message, type = 'info') => {
-        const id = Date.now();
-        setToasts(prev => [...prev, { id, message, type }]);
-    }, []);
-
-    const removeToast = (id) => {
-        setToasts(prev => prev.filter(t => t.id !== id));
-    };
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
 
     const handleBulkImport = async (e) => {
         const file = e.target.files[0];

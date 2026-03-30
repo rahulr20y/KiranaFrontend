@@ -21,14 +21,6 @@ export default function Products() {
     const [orderError, setOrderError] = useState('');
     const [orderSuccess, setOrderSuccess] = useState('');
 
-    useEffect(() => {
-        if (!isAuthenticated) {
-            router.push('/login');
-            return;
-        }
-        fetchData();
-    }, [isAuthenticated, fetchData]);
-
     const fetchData = useCallback(async () => {
         try {
             setLoading(true);
@@ -51,6 +43,14 @@ export default function Products() {
             setLoading(false);
         }
     }, [searchTerm, selectedCategory]);
+
+    useEffect(() => {
+        if (!isAuthenticated) {
+            router.push('/login');
+            return;
+        }
+        fetchData();
+    }, [isAuthenticated, fetchData]);
 
     const handleSearch = (e) => {
         setSearchTerm(e.target.value);

@@ -44,9 +44,14 @@ export default function ShopkeeperDashboard_v3() {
     });
     const [suggestions, setSuggestions] = useState([]);
 
-    useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+    const addToast = useCallback((message, type = 'info') => {
+        const id = Date.now();
+        setToasts(prev => [...prev, { id, message, type }]);
+    }, []);
+
+    const removeToast = (id) => {
+        setToasts(prev => prev.filter(t => t.id !== id));
+    };
 
     const fetchData = useCallback(async () => {
         try {
@@ -86,14 +91,9 @@ export default function ShopkeeperDashboard_v3() {
         }
     }, [setNotifications, addToast]);
 
-    const addToast = useCallback((message, type = 'info') => {
-        const id = Date.now();
-        setToasts(prev => [...prev, { id, message, type }]);
-    }, []);
-
-    const removeToast = (id) => {
-        setToasts(prev => prev.filter(t => t.id !== id));
-    };
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
 
     const handleFollowDealer = async (dealerId) => {
         try {
