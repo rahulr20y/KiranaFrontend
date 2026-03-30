@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useCart } from '../lib/cartContext';
 import { shopkeepersAPI, dealersAPI, ordersAPI, notificationsAPI, paymentsAPI } from '../lib/api';
+import { generateInvoicePDF } from '../lib/invoice';
 import styles from '../styles/dashboard.module.css';
 import toastStyles from '../styles/toast.module.css';
 import NotificationToast from './NotificationToast';
@@ -432,6 +433,13 @@ export default function ShopkeeperDashboard_v3() {
                                                         style={{ padding: '8px', fontSize: '12px' }}
                                                     >
                                                         Cancel
+                                                    </button>
+                                                    <button 
+                                                        className={styles.secondaryBtn}
+                                                        style={{ padding: '8px', fontSize: '12px' }}
+                                                        onClick={() => generateInvoicePDF(order)}
+                                                    >
+                                                        📄 Invoice
                                                     </button>
                                                 </div>
                                             ) : (
