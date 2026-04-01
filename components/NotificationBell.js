@@ -3,12 +3,17 @@ import { useNotifications } from '../lib/notificationContext';
 import styles from '../styles/notifications.module.css';
 
 export default function NotificationBell() {
-    const { notifications, markAsRead } = useNotifications();
+    const { notifications, markAsRead, markAllAsRead } = useNotifications();
     const [isOpen, setIsOpen] = useState(false);
     
     const unreadCount = Array.isArray(notifications) ? notifications.filter(n => !n.is_read).length : 0;
 
     const toggleDropdown = () => setIsOpen(!isOpen);
+
+    const handleMarkAllRead = (e) => {
+        e.stopPropagation();
+        markAllAsRead();
+    };
 
     return (
         <div className={styles.bellContainer}>
@@ -24,7 +29,7 @@ export default function NotificationBell() {
                     <div className={styles.header}>
                         <h3>Notifications</h3>
                         {unreadCount > 0 && (
-                            <button className={styles.markAllRead}>Mark all read</button>
+                            <button className={styles.markAllRead} onClick={handleMarkAllRead}>Mark all read</button>
                         )}
                     </div>
                     <div className={styles.list}>
