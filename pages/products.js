@@ -25,6 +25,11 @@ export default function Products() {
         try {
             setLoading(true);
             const params = {};
+            
+            if (router.query.dealer) {
+                params.dealer = router.query.dealer;
+            }
+            
             if (searchTerm) params.search = searchTerm;
             if (selectedCategory) params.category = selectedCategory;
 
