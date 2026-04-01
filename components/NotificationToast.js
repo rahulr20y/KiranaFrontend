@@ -4,18 +4,18 @@ import styles from '../styles/toast.module.css';
 export default function NotificationToast({ message, type = 'info', duration = 5000, onClose }) {
   const [isExiting, setIsExiting] = useState(false);
 
-    useEffect(() => {
+  const handleClose = useCallback(() => {
+    setIsExiting(true);
+    setTimeout(onClose, 300); // Wait for fade out animation
+  }, [onClose]);
+
+  useEffect(() => {
     const timer = setTimeout(() => {
       handleClose();
     }, duration);
 
     return () => clearTimeout(timer);
   }, [duration, handleClose]);
-
-  const handleClose = useCallback(() => {
-    setIsExiting(true);
-    setTimeout(onClose, 300); // Wait for fade out animation
-  }, [onClose]);
 
   return (
     <div className={`${styles.toast} ${styles[type]} ${isExiting ? styles.exit : ''}`}>

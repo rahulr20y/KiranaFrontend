@@ -436,23 +436,45 @@ export default function ShopkeeperDashboard_v3() {
                                 </p>
                             ) : (
                                 <div className={styles.dealersGrid}>
-                                    {allDealers.map((dealer) => (
-                                        <div key={dealer.id} className={styles.dealerCard}>
-                                            <h3>{dealer.business_name}</h3>
-                                            <p className={styles.dealerInfo}>
-                                                License: {dealer.license}
-                                            </p>
-                                            <p className={styles.dealerInfo}>
-                                                GST: {dealer.gst_number}
-                                            </p>
-                                            <button
-                                                className={styles.primaryBtn}
-                                                onClick={() => handleFollowDealer(dealer.id)}
-                                            >
-                                                Follow Dealer
-                                            </button>
-                                        </div>
-                                    ))}
+                                    {allDealers.map((dealer) => {
+                                        const isFollowed = preferredDealers.some(pd => pd.id === dealer.id);
+                                        return (
+                                            <div key={dealer.id} className={styles.dealerCard}>
+                                                <h3>{dealer.business_name}</h3>
+                                                <p className={styles.dealerInfo}>
+                                                    Category: {dealer.business_category}
+                                                </p>
+                                                <p className={styles.dealerInfo}>
+                                                    Rating: ⭐ {dealer.rating}
+                                                </p>
+                                                <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                    {isFollowed ? (
+                                                        <>
+                                                            <button
+                                                                className={styles.secondaryBtn}
+                                                                onClick={() => handleUnfollowDealer(dealer.id)}
+                                                            >
+                                                                Unfollow
+                                                            </button>
+                                                            <button
+                                                                className={styles.primaryBtn}
+                                                                onClick={() => router.push(`/products?dealer=${dealer.user_id}`)}
+                                                            >
+                                                                🛒 Browse Products
+                                                            </button>
+                                                        </>
+                                                    ) : (
+                                                        <button
+                                                            className={styles.primaryBtn}
+                                                            onClick={() => handleFollowDealer(dealer.id)}
+                                                        >
+                                                            Follow Dealer
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             )}
                         </div>
