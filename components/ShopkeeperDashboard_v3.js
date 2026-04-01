@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { useCart } from '../lib/cartContext';
 import { shopkeepersAPI, dealersAPI, ordersAPI, notificationsAPI, paymentsAPI, returnsAPI } from '../lib/api';
@@ -43,6 +43,7 @@ export default function ShopkeeperDashboard_v3() {
         max_qty: 1
     });
     const [suggestions, setSuggestions] = useState([]);
+    const lastToastedId = useRef(null);
 
     const addToast = useCallback((message, type = 'info') => {
         const id = Date.now();
@@ -74,14 +75,14 @@ export default function ShopkeeperDashboard_v3() {
                 business_type: profileRes.data.business_type || '',
                 monthly_budget: profileRes.data.monthly_budget || '',
             });
-            setAllDealers(dealersRes.data.results || dealersRes.data || []);
-            setPreferredDealers(preferredDealersRes.data || []);
-            setRecentOrders(ordersRes.data || []);
-            setBroadcasts(broadcastsRes.data.results || broadcastsRes.data || []);
-            setNotifications(notificationsRes.data.results || notificationsRes.data || []);
+            setAllDealers(Array.isArray(dealersRes.data.results) ? dealersRes.data.results : (Array.isArray(dealersRes.data) ? dealersRes.data : []));
+            setPreferredDealers(Array.isArray(preferredDealersRes.data) ? preferredDealersRes.data : []);
+            setRecentOrders(Array.isArray(ordersRes.data) ? ordersRes.data : []);
+            setBroadcasts(Array.isArray(broadcastsRes.data.results) ? broadcastsRes.data.results : (Array.isArray(broadcastsRes.data) ? broadcastsRes.data : []));
+            setNotifications(Array.isArray(notificationsRes.data.results) ? notificationsRes.data.results : (Array.isArray(notificationsRes.data) ? notificationsRes.data : []));
             setKhataSummary(khataRes.data);
-            setMyReturns(returnsRes.data || []);
-            setSuggestions(suggestionsRes.data || []);
+            setMyReturns(Array.isArray(returnsRes.data) ? returnsRes.data : []);
+            setSuggestions(Array.isArray(suggestionsRes.data) ? suggestionsRes.data : []);
             setError('');
         } catch (err) {
             setError('Failed to load shopkeeper information');
@@ -94,6 +95,25 @@ export default function ShopkeeperDashboard_v3() {
     useEffect(() => {
         fetchData();
     }, [fetchData]);
+
+    // Handle real-time notification toasts for shopkeeper
+    useEffect(() => {
+      const latestNotification = notifications[0];
+      if (latestNotification && !latestNotification.is_read && latestNotification.id !== lastToastedId.current) {
+        // Only show toast if it's "fresh" (within last few seconds) to avoid spam on load
+        const createdAt = new Date(latestNotification.created_at);
+        const now = new Date();
+        if (now - createdAt < 5000) {
+          addToast(latestNotification.message, latestNotification.notification_type === 'order_update' ? 'success' : 'info');
+          lastToastedId.current = latestNotification.id;
+          
+          // Also optionally refresh the dashboard if it's an order update or broadcast
+          if (latestNotification.notification_type === 'order_update') {
+            fetchData();
+          }
+        }
+      }
+    }, [notifications, addToast, fetchData]);
 
     const handleFollowDealer = async (dealerId) => {
         try {
@@ -330,6 +350,12 @@ export default function ShopkeeperDashboard_v3() {
                         onClick={() => setActiveTab('khata')}
                     >
                         Khata (Ledger)
+                    </button>
+                    <button
+                        className={`${styles.tab} ${activeTab === 'notifications' ? styles.active : ''}`}
+                        onClick={() => setActiveTab('notifications')}
+                    >
+                        Notifications {Array.isArray(notifications) && notifications.filter(n => !n.is_read).length > 0 && `(${notifications.filter(n => !n.is_read).length})`}
                     </button>
                     <button
                         className={`${styles.tab} ${activeTab === 'returns' ? styles.active : ''}`}

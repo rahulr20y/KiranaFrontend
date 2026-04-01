@@ -47,6 +47,7 @@ export default function DealerDashboard_v3() {
     const [stats, setStats] = useState(null);
     const [returns, setReturns] = useState([]);
     const fileInputRef = useRef(null);
+    const lastToastedId = useRef(null);
 
     const addToast = useCallback((message, type = 'info') => {
         const id = Date.now();
@@ -68,21 +69,22 @@ export default function DealerDashboard_v3() {
                 paymentsAPI.getSummary(),
                 shopkeepersAPI.listShopkeepers(),
                 ordersAPI.listOrders(),
-                ordersAPI.stats(),
+                ordersAPI.getOrderStats(),
                 returnsAPI.listReturns()
             ]);
-            setProducts(productsRes.data.results || productsRes.data || []);
+            setProducts(Array.isArray(productsRes.data.results) ? productsRes.data.results : (Array.isArray(productsRes.data) ? productsRes.data : []));
             setDealerProfile(profileRes.data);
-            setBroadcasts(broadcastsRes.data.results || broadcastsRes.data || []);
-            setNotifications(notificationsRes.data.results || notificationsRes.data || []);
+            setBroadcasts(Array.isArray(broadcastsRes.data.results) ? broadcastsRes.data.results : (Array.isArray(broadcastsRes.data) ? broadcastsRes.data : []));
+            setNotifications(Array.isArray(notificationsRes.data.results) ? notificationsRes.data.results : (Array.isArray(notificationsRes.data) ? notificationsRes.data : []));
             setKhataSummary(khataRes.data);
-            setShopkeepers(shopkeepersRes.data.results || shopkeepersRes.data || []);
-            setOrders(ordersRes.data.results || ordersRes.data || []);
+            setShopkeepers(Array.isArray(shopkeepersRes.data.results) ? shopkeepersRes.data.results : (Array.isArray(shopkeepersRes.data) ? shopkeepersRes.data : []));
+            setOrders(Array.isArray(ordersRes.data.results) ? ordersRes.data.results : (Array.isArray(ordersRes.data) ? ordersRes.data : []));
             setStats(statsRes.data);
-            setReturns(returnsRes.data || []);
+            setReturns(Array.isArray(returnsRes.data) ? returnsRes.data : []);
             
             // Auto-toast for low stock if we just fetched
-            const lowStockProducts = (productsRes.data.results || productsRes.data || []).filter(p => p.stock_quantity <= p.low_stock_threshold);
+            const productsArr = Array.isArray(productsRes.data.results) ? productsRes.data.results : (Array.isArray(productsRes.data) ? productsRes.data : []);
+            const lowStockProducts = productsArr.filter(p => p.stock_quantity <= p.low_stock_threshold);
             if (lowStockProducts.length > 0) {
               addToast(`Alert: ${lowStockProducts.length} items are low on stock!`, 'warning');
             }
@@ -103,6 +105,25 @@ export default function DealerDashboard_v3() {
     useEffect(() => {
         fetchData();
     }, [fetchData]);
+
+    // Handle real-time notification toasts
+    useEffect(() => {
+      const latestNotification = notifications[0];
+      if (latestNotification && !latestNotification.is_read && latestNotification.id !== lastToastedId.current) {
+        // Only show toast if it's "fresh" (within last few seconds) to avoid spam on load
+        const createdAt = new Date(latestNotification.created_at);
+        const now = new Date();
+        if (now - createdAt < 5000) {
+          addToast(latestNotification.message, latestNotification.notification_type === 'low_stock' ? 'warning' : 'info');
+          lastToastedId.current = latestNotification.id;
+          
+          // Also optionally refresh the dashboard if it's an order update
+          if (latestNotification.notification_type === 'order_update') {
+            fetchData();
+          }
+        }
+      }
+    }, [notifications, addToast, fetchData]);
 
     const handleBulkImport = async (e) => {
         const file = e.target.files[0];
@@ -335,11 +356,11 @@ export default function DealerDashboard_v3() {
                     >
                         Broadcasts
                     </button>
-                    <button
+                     <button
                         className={`${styles.tab} ${activeTab === 'notifications' ? styles.active : ''}`}
                         onClick={() => setActiveTab('notifications')}
                     >
-                        Notifications {notifications.filter(n => !n.is_read).length > 0 && `(${notifications.filter(n => !n.is_read).length})`}
+                        Notifications {Array.isArray(notifications) && notifications.filter(n => !n.is_read).length > 0 && `(${notifications.filter(n => !n.is_read).length})`}
                     </button>
                     <button
                         className={`${styles.tab} ${activeTab === 'analytics' ? styles.active : ''}`}
@@ -353,11 +374,11 @@ export default function DealerDashboard_v3() {
                     >
                         Khata (Ledger)
                     </button>
-                    <button
+                     <button
                         className={`${styles.tab} ${activeTab === 'returns' ? styles.active : ''}`}
                         onClick={() => setActiveTab('returns')}
                     >
-                        Returns {returns.filter(r => r.status === 'pending').length > 0 && `(${returns.filter(r => r.status === 'pending').length})`}
+                        Returns {Array.isArray(returns) && returns.filter(r => r.status === 'pending').length > 0 && `(${returns.filter(r => r.status === 'pending').length})`}
                     </button>
                 </div>
 
