@@ -95,6 +95,23 @@ export default function ShopkeeperDashboard_v3() {
         fetchData();
     }, [fetchData]);
 
+    // Handle real-time notification toasts for shopkeeper
+    useEffect(() => {
+      const latestNotification = notifications[0];
+      if (latestNotification && !latestNotification.is_read) {
+        // Only show toast if it's "fresh" (within last few seconds) to avoid spam on load
+        const createdAt = new Date(latestNotification.created_at);
+        const now = new Date();
+        if (now - createdAt < 5000) {
+          addToast(latestNotification.message, latestNotification.notification_type === 'order_update' ? 'success' : 'info');
+          // Also optionally refresh the dashboard if it's an order update or broadcast
+          if (latestNotification.notification_type === 'order_update') {
+            fetchData();
+          }
+        }
+      }
+    }, [notifications, addToast, fetchData]);
+
     const handleFollowDealer = async (dealerId) => {
         try {
             await shopkeepersAPI.followDealer(dealerId);

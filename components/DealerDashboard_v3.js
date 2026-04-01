@@ -68,7 +68,7 @@ export default function DealerDashboard_v3() {
                 paymentsAPI.getSummary(),
                 shopkeepersAPI.listShopkeepers(),
                 ordersAPI.listOrders(),
-                ordersAPI.stats(),
+                ordersAPI.getOrderStats(),
                 returnsAPI.listReturns()
             ]);
             setProducts(productsRes.data.results || productsRes.data || []);
@@ -103,6 +103,23 @@ export default function DealerDashboard_v3() {
     useEffect(() => {
         fetchData();
     }, [fetchData]);
+
+    // Handle real-time notification toasts
+    useEffect(() => {
+      const latestNotification = notifications[0];
+      if (latestNotification && !latestNotification.is_read) {
+        // Only show toast if it's "fresh" (within last few seconds) to avoid spam on load
+        const createdAt = new Date(latestNotification.created_at);
+        const now = new Date();
+        if (now - createdAt < 5000) {
+          addToast(latestNotification.message, latestNotification.notification_type === 'low_stock' ? 'warning' : 'info');
+          // Also optionally refresh the dashboard if it's an order update
+          if (latestNotification.notification_type === 'order_update') {
+            fetchData();
+          }
+        }
+      }
+    }, [notifications, addToast, fetchData]);
 
     const handleBulkImport = async (e) => {
         const file = e.target.files[0];
