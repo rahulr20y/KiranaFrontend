@@ -75,14 +75,14 @@ export default function ShopkeeperDashboard_v3() {
                 business_type: profileRes.data.business_type || '',
                 monthly_budget: profileRes.data.monthly_budget || '',
             });
-            setAllDealers(dealersRes.data.results || dealersRes.data || []);
-            setPreferredDealers(preferredDealersRes.data || []);
-            setRecentOrders(ordersRes.data || []);
-            setBroadcasts(broadcastsRes.data.results || broadcastsRes.data || []);
-            setNotifications(notificationsRes.data.results || notificationsRes.data || []);
+            setAllDealers(Array.isArray(dealersRes.data.results) ? dealersRes.data.results : (Array.isArray(dealersRes.data) ? dealersRes.data : []));
+            setPreferredDealers(Array.isArray(preferredDealersRes.data) ? preferredDealersRes.data : []);
+            setRecentOrders(Array.isArray(ordersRes.data) ? ordersRes.data : []);
+            setBroadcasts(Array.isArray(broadcastsRes.data.results) ? broadcastsRes.data.results : (Array.isArray(broadcastsRes.data) ? broadcastsRes.data : []));
+            setNotifications(Array.isArray(notificationsRes.data.results) ? notificationsRes.data.results : (Array.isArray(notificationsRes.data) ? notificationsRes.data : []));
             setKhataSummary(khataRes.data);
-            setMyReturns(returnsRes.data || []);
-            setSuggestions(suggestionsRes.data || []);
+            setMyReturns(Array.isArray(returnsRes.data) ? returnsRes.data : []);
+            setSuggestions(Array.isArray(suggestionsRes.data) ? suggestionsRes.data : []);
             setError('');
         } catch (err) {
             setError('Failed to load shopkeeper information');
@@ -350,6 +350,12 @@ export default function ShopkeeperDashboard_v3() {
                         onClick={() => setActiveTab('khata')}
                     >
                         Khata (Ledger)
+                    </button>
+                    <button
+                        className={`${styles.tab} ${activeTab === 'notifications' ? styles.active : ''}`}
+                        onClick={() => setActiveTab('notifications')}
+                    >
+                        Notifications {Array.isArray(notifications) && notifications.filter(n => !n.is_read).length > 0 && `(${notifications.filter(n => !n.is_read).length})`}
                     </button>
                     <button
                         className={`${styles.tab} ${activeTab === 'returns' ? styles.active : ''}`}

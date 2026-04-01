@@ -31,11 +31,11 @@ export default function DealerAnalytics({ stats }) {
     if (!stats || !stats.sales_trends) return null;
     
     return {
-      labels: stats.sales_trends.map(item => new Date(item.date).toLocaleDateString()),
+      labels: (Array.isArray(stats.sales_trends) ? stats.sales_trends : []).map(item => new Date(item.date).toLocaleDateString()),
       datasets: [
         {
           label: 'Daily Revenue (₹)',
-          data: stats.sales_trends.map(item => item.total),
+          data: (Array.isArray(stats.sales_trends) ? stats.sales_trends : []).map(item => item.total),
           borderColor: 'rgb(59, 130, 246)',
           backgroundColor: 'rgba(59, 130, 246, 0.5)',
           tension: 0.3,
@@ -49,11 +49,11 @@ export default function DealerAnalytics({ stats }) {
     if (!stats || !stats.top_products) return null;
     
     return {
-      labels: stats.top_products.map(item => item.product__name),
+      labels: (Array.isArray(stats.top_products) ? stats.top_products : []).map(item => item.product__name),
       datasets: [
         {
           label: 'Revenue by Product',
-          data: stats.top_products.map(item => item.total_revenue),
+          data: (Array.isArray(stats.top_products) ? stats.top_products : []).map(item => item.total_revenue),
           backgroundColor: [
             'rgba(255, 99, 132, 0.7)',
             'rgba(54, 162, 235, 0.7)',

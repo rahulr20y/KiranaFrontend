@@ -6,7 +6,7 @@ export default function NotificationBell() {
     const { notifications, markAsRead } = useNotifications();
     const [isOpen, setIsOpen] = useState(false);
     
-    const unreadCount = notifications.filter(n => !n.is_read).length;
+    const unreadCount = Array.isArray(notifications) ? notifications.filter(n => !n.is_read).length : 0;
 
     const toggleDropdown = () => setIsOpen(!isOpen);
 
@@ -28,10 +28,10 @@ export default function NotificationBell() {
                         )}
                     </div>
                     <div className={styles.list}>
-                        {notifications.length === 0 ? (
+                        {!Array.isArray(notifications) || notifications.length === 0 ? (
                             <div className={styles.empty}>No notifications yet</div>
                         ) : (
-                            notifications.map(notification => (
+                            Array.isArray(notifications) && notifications.map(notification => (
                                 <div 
                                     key={notification.id} 
                                     className={`${styles.item} ${!notification.is_read ? styles.unread : ''}`}
