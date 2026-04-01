@@ -356,12 +356,6 @@ export default function DealerDashboard_v3() {
                     >
                         Broadcasts
                     </button>
-                     <button
-                        className={`${styles.tab} ${activeTab === 'notifications' ? styles.active : ''}`}
-                        onClick={() => setActiveTab('notifications')}
-                    >
-                        Notifications {Array.isArray(notifications) && notifications.filter(n => !n.is_read).length > 0 && `(${notifications.filter(n => !n.is_read).length})`}
-                    </button>
                     <button
                         className={`${styles.tab} ${activeTab === 'analytics' ? styles.active : ''}`}
                         onClick={() => setActiveTab('analytics')}
@@ -918,47 +912,6 @@ export default function DealerDashboard_v3() {
                         </div>
                     )}
 
-                    {activeTab === 'notifications' && (
-                        <div className={styles.notificationsTab}>
-                            <div className={styles.sectionHeader}>
-                                <h2>Notifications</h2>
-                                <button 
-                                    className={styles.secondaryBtn}
-                                    onClick={async () => {
-                                        await notificationsAPI.markAllAsRead();
-                                        fetchData();
-                                    }}
-                                >
-                                    Mark all as read
-                                </button>
-                            </div>
-
-                            {notifications.length === 0 ? (
-                                <p className={styles.emptyMessage}>No notifications yet.</p>
-                            ) : (
-                                <div className={styles.notificationList}>
-                                    {notifications.map((notification) => (
-                                        <div 
-                                            key={notification.id} 
-                                            className={`${styles.notificationItem} ${!notification.is_read ? styles.unread : ''} ${styles['type_' + notification.notification_type]}`}
-                                            onClick={async () => {
-                                                if (!notification.is_read) {
-                                                    await notificationsAPI.markAsRead(notification.id);
-                                                    fetchData();
-                                                }
-                                            }}
-                                        >
-                                            <div className={styles.notificationHeader}>
-                                                <strong>{notification.title}</strong>
-                                                <span className={styles.date}>{new Date(notification.created_at).toLocaleString()}</span>
-                                            </div>
-                                            <p>{notification.message}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    )}
 
                     {activeTab === 'broadcasts' && (
                         <div className={styles.broadcastsTab}>

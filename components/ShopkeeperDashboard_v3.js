@@ -352,12 +352,6 @@ export default function ShopkeeperDashboard_v3() {
                         Khata (Ledger)
                     </button>
                     <button
-                        className={`${styles.tab} ${activeTab === 'notifications' ? styles.active : ''}`}
-                        onClick={() => setActiveTab('notifications')}
-                    >
-                        Notifications {Array.isArray(notifications) && notifications.filter(n => !n.is_read).length > 0 && `(${notifications.filter(n => !n.is_read).length})`}
-                    </button>
-                    <button
                         className={`${styles.tab} ${activeTab === 'returns' ? styles.active : ''}`}
                         onClick={() => setActiveTab('returns')}
                     >
