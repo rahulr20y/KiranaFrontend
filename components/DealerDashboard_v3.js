@@ -47,6 +47,7 @@ export default function DealerDashboard_v3() {
     const [stats, setStats] = useState(null);
     const [returns, setReturns] = useState([]);
     const fileInputRef = useRef(null);
+    const lastToastedId = useRef(null);
 
     const addToast = useCallback((message, type = 'info') => {
         const id = Date.now();
@@ -107,12 +108,14 @@ export default function DealerDashboard_v3() {
     // Handle real-time notification toasts
     useEffect(() => {
       const latestNotification = notifications[0];
-      if (latestNotification && !latestNotification.is_read) {
+      if (latestNotification && !latestNotification.is_read && latestNotification.id !== lastToastedId.current) {
         // Only show toast if it's "fresh" (within last few seconds) to avoid spam on load
         const createdAt = new Date(latestNotification.created_at);
         const now = new Date();
         if (now - createdAt < 5000) {
           addToast(latestNotification.message, latestNotification.notification_type === 'low_stock' ? 'warning' : 'info');
+          lastToastedId.current = latestNotification.id;
+          
           // Also optionally refresh the dashboard if it's an order update
           if (latestNotification.notification_type === 'order_update') {
             fetchData();

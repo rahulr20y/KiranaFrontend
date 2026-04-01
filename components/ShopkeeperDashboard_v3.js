@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { useCart } from '../lib/cartContext';
 import { shopkeepersAPI, dealersAPI, ordersAPI, notificationsAPI, paymentsAPI, returnsAPI } from '../lib/api';
@@ -43,6 +43,7 @@ export default function ShopkeeperDashboard_v3() {
         max_qty: 1
     });
     const [suggestions, setSuggestions] = useState([]);
+    const lastToastedId = useRef(null);
 
     const addToast = useCallback((message, type = 'info') => {
         const id = Date.now();
@@ -98,12 +99,14 @@ export default function ShopkeeperDashboard_v3() {
     // Handle real-time notification toasts for shopkeeper
     useEffect(() => {
       const latestNotification = notifications[0];
-      if (latestNotification && !latestNotification.is_read) {
+      if (latestNotification && !latestNotification.is_read && latestNotification.id !== lastToastedId.current) {
         // Only show toast if it's "fresh" (within last few seconds) to avoid spam on load
         const createdAt = new Date(latestNotification.created_at);
         const now = new Date();
         if (now - createdAt < 5000) {
           addToast(latestNotification.message, latestNotification.notification_type === 'order_update' ? 'success' : 'info');
+          lastToastedId.current = latestNotification.id;
+          
           // Also optionally refresh the dashboard if it's an order update or broadcast
           if (latestNotification.notification_type === 'order_update') {
             fetchData();
