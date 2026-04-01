@@ -470,7 +470,7 @@ export default function ShopkeeperDashboard_v3() {
                                                 <span className={styles.orderStatus}>{order.status}</span>
                                             </div>
                                             <div className={styles.orderDetails}>
-                                                <p>Dealer: {order.dealer?.business_name || 'N/A'}</p>
+                                                <p>Dealer: {order.dealer_business_name || order.dealer_name || 'N/A'}</p>
                                                 <p>Date: {new Date(order.created_at).toLocaleDateString()}</p>
                                             </div>
                                             <div className={styles.orderItemList} style={{ margin: '10px 0', borderTop: '1px solid #eee', paddingTop: '10px' }}>
