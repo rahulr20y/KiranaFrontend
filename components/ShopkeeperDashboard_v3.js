@@ -8,6 +8,18 @@ import toastStyles from '../styles/toast.module.css';
 import NotificationToast from './NotificationToast';
 import { useNotifications } from '../lib/notificationContext';
 import NotificationBell from './NotificationBell';
+import { 
+    LayoutDashboard, 
+    Users, 
+    ShoppingBag, 
+    Radio, 
+    CreditCard, 
+    RotateCcw, 
+    User,
+    TrendingDown,
+    ArrowRight
+} from 'lucide-react';
+
 
 export default function ShopkeeperDashboard_v3() {
     const router = useRouter();
@@ -306,14 +318,17 @@ export default function ShopkeeperDashboard_v3() {
 
             <div className={styles.statsGrid}>
                 <div className={styles.statCard}>
+                    <ShoppingBag className={styles.statIcon} size={24} />
                     <div className={styles.statNumber}>{shopkeeperProfile?.total_orders || '0'}</div>
                     <div className={styles.statLabel}>Active Orders</div>
                 </div>
                 <div className={styles.statCard}>
+                    <Users className={styles.statIcon} size={24} />
                     <div className={styles.statNumber}>{preferredDealers.length || '0'}</div>
                     <div className={styles.statLabel}>Preferred Dealers</div>
                 </div>
                 <div className={styles.statCard}>
+                    <CreditCard className={styles.statIcon} size={24} />
                     <div className={styles.statNumber}>₹{khataSummary?.my_total_payable || '0'}</div>
                     <div className={styles.statLabel}>Digital Ledger</div>
                 </div>
@@ -325,45 +340,53 @@ export default function ShopkeeperDashboard_v3() {
                         className={`${styles.tab} ${activeTab === 'overview' ? styles.active : ''}`}
                         onClick={() => setActiveTab('overview')}
                     >
-                        Overview
+                        <LayoutDashboard size={18} />
+                        <span>Overview</span>
                     </button>
                     <button
                         className={`${styles.tab} ${activeTab === 'dealers' ? styles.active : ''}`}
                         onClick={() => setActiveTab('dealers')}
                     >
-                        Dealers
+                        <Users size={18} />
+                        <span>Dealers</span>
                     </button>
                     <button
                         className={`${styles.tab} ${activeTab === 'orders' ? styles.active : ''}`}
                         onClick={() => setActiveTab('orders')}
                     >
-                        Orders
+                        <ShoppingBag size={18} />
+                        <span>Orders</span>
                     </button>
                     <button
                         className={`${styles.tab} ${activeTab === 'broadcasts' ? styles.active : ''}`}
                         onClick={() => setActiveTab('broadcasts')}
                     >
-                        Broadcasts
+                        <Radio size={18} />
+                        <span>Broadcasts</span>
                     </button>
                     <button
                         className={`${styles.tab} ${activeTab === 'khata' ? styles.active : ''}`}
                         onClick={() => setActiveTab('khata')}
                     >
-                        Khata (Ledger)
+                        <CreditCard size={18} />
+                        <span>Khata</span>
                     </button>
                     <button
                         className={`${styles.tab} ${activeTab === 'returns' ? styles.active : ''}`}
                         onClick={() => setActiveTab('returns')}
                     >
-                        Returns
+                        <RotateCcw size={18} />
+                        <span>Returns</span>
                     </button>
                     <button
                         className={`${styles.tab} ${activeTab === 'profile' ? styles.active : ''}`}
                         onClick={() => setActiveTab('profile')}
                     >
-                        Profile
+                        <User size={18} />
+                        <span>Profile</span>
                     </button>
                 </div>
+
 
                 <div className={styles.tabContent}>
                     {activeTab === 'overview' && (
