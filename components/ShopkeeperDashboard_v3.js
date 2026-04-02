@@ -760,41 +760,81 @@ export default function ShopkeeperDashboard_v3() {
 
                     {activeTab === 'returns' && (
                         <div className={styles.returnsTab}>
-                            <h2>My Return Requests</h2>
+                            <div className={styles.sectionHeader}>
+                                <div>
+                                    <h2>Return Requests</h2>
+                                    <p className={styles.subtitle}>Track and manage your product returns and issues</p>
+                                </div>
+                                <div className={styles.infoBadge}>
+                                    <RotateCcw size={14} />
+                                    <span>{myReturns.length} Total</span>
+                                </div>
+                            </div>
+                            
                             {myReturns && myReturns.length > 0 ? (
                                 <div className={styles.returnsList}>
-                                    <table className={styles.table}>
-                                        <thead>
-                                            <tr>
-                                                <th>Reference</th>
-                                                <th>Item</th>
-                                                <th>Qty</th>
-                                                <th>Status</th>
-                                                <th>Notes</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {myReturns.map(ret => (
-                                                <tr key={ret.id}>
-                                                    <td>#{ret.order_number?.substring(0, 8)}</td>
-                                                    <td>{ret.product_name}</td>
-                                                    <td>{ret.quantity}</td>
-                                                    <td>
-                                                        <span className={`${styles.statusBadge} ${styles['status_' + ret.status?.toLowerCase()]}`}>
-                                                            {ret.status}
-                                                        </span>
-                                                    </td>
-                                                    <td>{ret.dealer_notes || ret.reason?.substring(0, 30)}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                    {myReturns.map(ret => (
+                                        <div key={ret.id} className={`${styles.returnCard} premium-card`}>
+                                            <div className={styles.returnCardHeader}>
+                                                <div className={styles.returnRef}>
+                                                    <span className={styles.refLabel}>Order Ref:</span>
+                                                    <strong>#{ret.order_number?.substring(0, 8)}</strong>
+                                                </div>
+                                                <span className={`${styles.statusBadge} ${styles['status_' + ret.status?.toLowerCase()]}`}>
+                                                    {ret.status === 'pending' && <TrendingDown size={12} />}
+                                                    {ret.status === 'approved' && <ShoppingBag size={12} />}
+                                                    {ret.status === 'rejected' && <RotateCcw size={12} />}
+                                                    {ret.status}
+                                                </span>
+                                            </div>
+                                            
+                                            <div className={styles.returnCardBody}>
+                                                <div className={styles.returnItemInfo}>
+                                                    <h3>{ret.product_name}</h3>
+                                                    <p>Quantity: <strong>{ret.quantity} Units</strong></p>
+                                                </div>
+                                                <div className={styles.returnReasonBox}>
+                                                    <span className={styles.label}>Reason for Return:</span>
+                                                    <p>{ret.reason}</p>
+                                                </div>
+                                            </div>
+
+                                            {ret.dealer_notes && (
+                                                <div className={styles.dealerFeedback}>
+                                                    <div className={styles.feedbackHeader}>
+                                                        <strong>Dealer Feedback:</strong>
+                                                    </div>
+                                                    <p>{ret.dealer_notes}</p>
+                                                </div>
+                                            )}
+                                            
+                                            <div className={styles.returnCardFooter}>
+                                                <span className={styles.returnDate}>Requested on: {new Date(ret.created_at).toLocaleDateString()}</span>
+                                                <button className={styles.textBtn}>
+                                                    <span>View Details</span>
+                                                    <ArrowRight size={14} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             ) : (
-                                <p className={styles.emptyMessage}>No return requests raised yet.</p>
+                                <div className={styles.emptyState}>
+                                    <div className={styles.emptyIcon}>📦</div>
+                                    <h3>No Returns Found</h3>
+                                    <p>You haven't raised any return requests yet. You can do this from the <strong>Orders</strong> tab for delivered items.</p>
+                                    <button 
+                                        className={styles.secondaryBtn}
+                                        onClick={() => setActiveTab('orders')}
+                                        style={{ marginTop: '1rem' }}
+                                    >
+                                        Go to Orders
+                                    </button>
+                                </div>
                             )}
                         </div>
                     )}
+
 
                     {activeTab === 'profile' && (
                         <div className={styles.profileTab}>
