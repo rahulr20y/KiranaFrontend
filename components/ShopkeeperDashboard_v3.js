@@ -382,7 +382,18 @@ export default function ShopkeeperDashboard_v3() {
                                                 <button 
                                                     className={styles.secondaryBtn}
                                                     style={{ width: '100%', fontSize: '12px', padding: '4px 0' }}
-                                                    onClick={() => addToast(`Feature coming soon: Quick Restock for ${s.name}`, 'info')}
+                                                    onClick={() => {
+                                                        const itemData = {
+                                                            product: s.product_id,
+                                                            product_name: s.name,
+                                                            product_price: s.price,
+                                                            quantity: 1, // Default to 1 for quick restock
+                                                            unit: 'unit'
+                                                        };
+                                                        loadOrderIntoCart([itemData], s.dealer_id);
+                                                        addToast(`Added ${s.name} to cart!`, 'success');
+                                                        router.push('/cart');
+                                                    }}
                                                 >
                                                     🛒 Quick Restock
                                                 </button>

@@ -2,7 +2,9 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useAuth } from '../lib/authContext'
 import { useCart } from '../lib/cartContext'
-import styles from '../styles/landing.module.css'
+import { LogOut, LayoutDashboard, ShoppingCart, Package } from 'lucide-react'
+import { motion } from 'framer-motion'
+import styles from '../styles/navbar.module.css'
 
 export default function Navbar() {
     const router = useRouter()
@@ -14,80 +16,65 @@ export default function Navbar() {
         router.push('/')
     }
 
-    const handleDashboard = () => {
-        router.push('/dashboard')
-    }
-
     return (
         <nav className={styles.navbar}>
             <div className={styles.container}>
                 <div className={styles.navContent}>
-                    <Link href="/">
-                        <div className={styles.logo}>🛍️ Kirana</div>
-                    </Link>
+                    <motion.div 
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.5 }}
+                    >
+                        <Link href="/" className={styles.logo}>
+                            <Package className={styles.logoIcon} />
+                            <span>Kirana</span>
+                        </Link>
+                    </motion.div>
 
                     <ul className={styles.navLinks}>
-                        {isAuthenticated && (
+                        {isAuthenticated ? (
                             <>
-                                <li><Link href="/products">Products</Link></li>
-                                <li><Link href="/dashboard">Orders</Link></li>
+                                <li><Link href="/products" className={router.pathname === '/products' ? styles.active : ''}>Products</Link></li>
+                                <li><Link href="/dashboard" className={router.pathname === '/dashboard' ? styles.active : ''}>Dashboard</Link></li>
                                 {user?.user_type === 'shopkeeper' && (
                                     <li>
-                                        <Link href="/cart">
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
-                                                🛒 Cart 
+                                        <Link href="/cart" className={styles.cartLink}>
+                                            <div className={styles.cartIconWrapper}>
+                                                <ShoppingCart size={20} />
                                                 {cartCount > 0 && (
-                                                    <span style={{
-                                                        background: '#ef4444',
-                                                        color: 'white',
-                                                        borderRadius: '50%',
-                                                        padding: '2px 6px',
-                                                        fontSize: '10px',
-                                                        fontWeight: 'bold',
-                                                        minWidth: '18px',
-                                                        textAlign: 'center'
-                                                    }}>
-                                                        {cartCount}
-                                                    </span>
+                                                    <span className={styles.cartBadge}>{cartCount}</span>
                                                 )}
                                             </div>
+                                            <span>Cart</span>
                                         </Link>
                                     </li>
                                 )}
                             </>
-                        )}
-                        {!isAuthenticated && (
+                        ) : (
                             <>
                                 <li><a href="#features">Features</a></li>
-                                <li><a href="#roles">For Dealers & Shopkeepers</a></li>
-                                <li><a href="#contact">Contact</a></li>
+                                <li><a href="#roles">For Partners</a></li>
                             </>
                         )}
                     </ul>
 
-                    <div className={styles.authButtons}>
+                    <div className={styles.authActions}>
                         {isAuthenticated ? (
-                            <>
+                            <div className={styles.userSection}>
                                 <div className={styles.userInfo}>
-                                    <span className={styles.userName}>{user?.first_name || user?.username} [v1.7 FORCED]</span>
-                                    <span className={styles.userType}>({user?.user_type})</span>
+                                    <span className={styles.userName}>{user?.first_name || user?.username}</span>
+                                    <span className={styles.userBadge}>{user?.user_type}</span>
                                 </div>
-                                <button className={styles.dashboardBtn} onClick={handleDashboard}>
-                                    Dashboard
+                                <div className={styles.divider} />
+                                <button className={styles.logoutBtn} onClick={handleLogout} title="Logout">
+                                    <LogOut size={18} />
                                 </button>
-                                <button className={styles.logoutBtn} onClick={handleLogout}>
-                                    Logout
-                                </button>
-                            </>
+                            </div>
                         ) : (
-                            <>
-                                <Link href="/login">
-                                    <button className={styles.loginBtn}>Login</button>
-                                </Link>
-                                <Link href="/signup">
-                                    <button className={styles.signupBtn}>Sign Up</button>
-                                </Link>
-                            </>
+                            <div className={styles.guestActions}>
+                                <Link href="/login" className={styles.loginBtn}>Login</Link>
+                                <Link href="/signup" className={styles.signupBtn}>Get Started</Link>
+                            </div>
                         )}
                     </div>
                 </div>

@@ -1,0 +1,209 @@
+.navbar {
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.navContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.logoIcon {
+  color: var(--primary);
+  stroke-width: 2.5;
+}
+
+.navLinks {
+  display: flex;
+  list-style: none;
+  gap: 2rem;
+  align-items: center;
+}
+
+.navLinks a {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: var(--transition-base);
+  position: relative;
+  padding: 0.5rem 0;
+}
+
+.navLinks a:hover,
+.navLinks a.active {
+  color: var(--primary);
+}
+
+.navLinks a.active::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 100%;
+  height: 2.5px;
+  background: var(--primary);
+  border-radius: 4px;
+}
+
+.cartLink {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cartIconWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cartBadge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: var(--error);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+.authActions {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.guestActions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.loginBtn {
+  font-weight: 600;
+  color: var(--text-main);
+  padding: 0.6rem 1.25rem;
+  border-radius: var(--radius-md);
+  transition: var(--transition-base);
+}
+
+.loginBtn:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.signupBtn {
+  background: var(--primary);
+  color: white;
+  font-weight: 600;
+  padding: 0.6rem 1.25rem;
+  border-radius: var(--radius-md);
+  transition: var(--transition-base);
+  box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.39);
+}
+
+.signupBtn:hover {
+  transform: translateY(-2px);
+  background: var(--primary-dark);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.23);
+}
+
+.userSection {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(0, 0, 0, 0.03);
+  padding: 0.4rem 0.4rem 0.4rem 1rem;
+  border-radius: var(--radius-xl);
+}
+
+.userInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.userName {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.userBadge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.divider {
+  width: 1px;
+  height: 24px;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.logoutBtn {
+  background: var(--error);
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-base);
+}
+
+.logoutBtn:hover {
+  transform: rotate(15deg) scale(1.1);
+  background: #dc2626;
+}
+
+@media (max-width: 768px) {
+  .navLinks span {
+    display: none;
+  }
+  .container {
+    padding: 0 1rem;
+  }
+  .navLinks {
+    gap: 1rem;
+  }
+  .userName {
+    display: none;
+  }
+}

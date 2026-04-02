@@ -46,6 +46,14 @@ export default function DealerDashboard_v3() {
     const [ledgerLoading, setLedgerLoading] = useState(false);
     const [stats, setStats] = useState(null);
     const [returns, setReturns] = useState([]);
+    const [showEditProduct, setShowEditProduct] = useState(false);
+    const [editProductData, setEditProductData] = useState({
+        name: '',
+        description: '',
+        price: '',
+        stock_quantity: '',
+        low_stock_threshold: 10,
+    });
     const fileInputRef = useRef(null);
     const lastToastedId = useRef(null);
 
@@ -276,6 +284,40 @@ export default function DealerDashboard_v3() {
         }));
     };
 
+    const handleDeleteProduct = async (id) => {
+        if (!confirm('Are you sure you want to delete this product?')) return;
+        try {
+            setLoading(true);
+            await productsAPI.deleteProduct(id);
+            addToast('Product deleted successfully!', 'success');
+            fetchData();
+        } catch (err) {
+            addToast('Failed to delete product', 'error');
+        } finally {
+            setLoading(true);
+        }
+    };
+
+    const handleEditProductClick = (product) => {
+        setEditProductData(product);
+        setShowEditProduct(true);
+    };
+
+    const handleEditProductSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            setLoading(true);
+            await productsAPI.updateProduct(editProductData.id, editProductData);
+            addToast('Product updated successfully!', 'success');
+            setShowEditProduct(false);
+            fetchData();
+        } catch (err) {
+            addToast('Failed to update product', 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleAddProduct = async (e) => {
         e.preventDefault();
         try {
@@ -305,7 +347,7 @@ export default function DealerDashboard_v3() {
             <div className={styles.dashboardHeader}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                     <div>
-                        <h1>Dealer Dashboard <span style={{ fontSize: '10px', opacity: 0.5 }}>[v1.7 FORCED]</span></h1>
+                        <h1>Dealer Dashboard</h1>
                         <p>Welcome, {dealerProfile?.business_name || 'Dealer'}</p>
                     </div>
                     <NotificationBell />
@@ -395,7 +437,7 @@ export default function DealerDashboard_v3() {
                                         style={{ marginRight: '10px' }}
                                     >
                                         📥 Bulk Import
-                                    </button>
+                                                    </button>
                                     <span style={{ fontSize: '10px', color: '#666', marginRight: '10px' }}>
                                         (CSV: name, price, stock)
                                     </span>
@@ -465,7 +507,7 @@ export default function DealerDashboard_v3() {
                                             type="text" 
                                             value={saleFormData.notes}
                                             onChange={(e) => setSaleFormData({...saleFormData, notes: e.target.value})}
-                                            placeholder="e.target.value"
+                                            placeholder="Enter notes for this sale"
                                         />
                                     </div>
                                     <button type="submit" className={styles.primaryBtn}>Record Sale & Deduct Stock</button>
@@ -625,8 +667,18 @@ export default function DealerDashboard_v3() {
                                                         )}
                                                     </td>
                                                     <td>
-                                                        <button className={styles.btnSmall}>Edit</button>
-                                                        <button className={styles.btnSmallDanger}>Delete</button>
+                                                        <button 
+                                                            className={styles.btnSmall}
+                                                            onClick={() => handleEditProductClick(product)}
+                                                        >
+                                                            Edit
+                                                        </button>
+                                                        <button 
+                                                            className={styles.btnSmallDanger}
+                                                            onClick={() => handleDeleteProduct(product.id)}
+                                                        >
+                                                            Delete
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             ))}
@@ -1121,6 +1173,57 @@ export default function DealerDashboard_v3() {
                                 </div>
                             </div>
                         )}
+                    </div>
+                </div>
+            )}
+            {showEditProduct && (
+                <div className={styles.modalOverlay}>
+                    <div className={styles.formCard} style={{ width: '500px' }}>
+                        <h3>Edit Product</h3>
+                        <form onSubmit={handleEditProductSubmit}>
+                            <div className={styles.formGroup}>
+                                <label>Product Name</label>
+                                <input
+                                    type="text"
+                                    value={editProductData.name}
+                                    onChange={(e) => setEditProductData({ ...editProductData, name: e.target.value })}
+                                    required
+                                />
+                            </div>
+                            <div className={styles.formGroup}>
+                                <label>Description</label>
+                                <textarea
+                                    value={editProductData.description}
+                                    onChange={(e) => setEditProductData({ ...editProductData, description: e.target.value })}
+                                    rows="3"
+                                    required
+                                />
+                            </div>
+                            <div className={styles.formRow}>
+                                <div className={styles.formGroup}>
+                                    <label>Price (₹)</label>
+                                    <input
+                                        type="number"
+                                        value={editProductData.price}
+                                        onChange={(e) => setEditProductData({ ...editProductData, price: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                                <div className={styles.formGroup}>
+                                    <label>Stock</label>
+                                    <input
+                                        type="number"
+                                        value={editProductData.stock_quantity}
+                                        onChange={(e) => setEditProductData({ ...editProductData, stock_quantity: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                                <button type="submit" className={styles.primaryBtn} style={{ flex: 1 }}>Save Changes</button>
+                                <button type="button" className={styles.secondaryBtn} onClick={() => setShowEditProduct(false)} style={{ flex: 1 }}>Cancel</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

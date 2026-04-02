@@ -28,8 +28,8 @@ describe('Kirana Full Business Lifecycle', () => {
         cy.get('button').contains('Create Account').click();
 
         cy.url({ timeout: 15000 }).should('include', '/dashboard');
-        // Wait up to 5 minutes for Vercel deployment to propagate
-        cy.contains('[v1.7 FORCED]', { timeout: 300000 }).should('be.visible');
+        // Verify Dashboard Header
+        cy.contains('Dealer Dashboard', { timeout: 300000 }).should('be.visible');
         
         // Add a product
         cy.get('button').contains('Add Product').click();
@@ -69,11 +69,13 @@ describe('Kirana Full Business Lifecycle', () => {
         
         // Search and Order
         cy.get('input[placeholder*="Search"]').type(dealer.productName);
-        cy.get('h3', { timeout: 10000 }).contains(dealer.productName).should('be.visible');
+        // Place Order - now uses cart flow
+        cy.get('button').contains('Add to Cart').first().click();
+        cy.get('div').contains('added to cart').should('be.visible');
         
-        // Place Order
-        cy.get('button').contains('Order').first().click();
-        cy.get('div', { timeout: 15000 }).contains('Order placed successfully!').should('be.visible');
+        cy.visit(`${baseUrl}/cart`);
+        cy.get('button').contains('Confirm & Place Order').click();
+        cy.get('div', { timeout: 15000 }).contains('Order(s) placed successfully').should('be.visible');
         
         // Verify Shopkeeper Stats update
         cy.get('button').contains('Dashboard').click();
