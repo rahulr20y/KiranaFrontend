@@ -6,7 +6,7 @@ import { CartProvider } from '../lib/cartContext'
 import Head from 'next/head'
 import { useEffect, useState } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { appWithTranslation } from 'next-i18next'
+import { appWithTranslation } from 'next-i18next/pages'
 
 const queryClient = new QueryClient()
 

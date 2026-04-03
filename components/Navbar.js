@@ -4,7 +4,7 @@ import { useAuth } from '../lib/authContext'
 import { useCart } from '../lib/cartContext'
 import { LogOut, LayoutDashboard, ShoppingCart, Package, Globe } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { useTranslation } from 'next-i18next'
+import { useTranslation } from 'next-i18next/pages'
 import styles from '../styles/navbar.module.css'
 
 export default function Navbar() {
