@@ -1,4 +1,13 @@
 import { useState, useEffect } from 'react';
+import { serverSideTranslations } from 'next-i18next/pages/serverSideTranslations';
+
+export async function getServerSideProps({ locale }) {
+    return {
+        props: {
+            ...(await serverSideTranslations(locale, ['common'])),
+        },
+    };
+}
 import { useRouter } from 'next/router';
 import { useCart } from '../lib/cartContext';
 import { useAuth } from '../lib/authContext';

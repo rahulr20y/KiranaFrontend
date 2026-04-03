@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { serverSideTranslations } from 'next-i18next/pages/serverSideTranslations';
 
 export async function getStaticProps({ locale }) {
@@ -16,13 +16,19 @@ import styles from '../styles/auth.module.css';
 
 export default function Login() {
     const router = useRouter();
-    const { login, error: authError, clearError } = useAuth();
+    const { login, isAuthenticated, error: authError, clearError } = useAuth();
     const [formData, setFormData] = useState({
         username: '',
         password: '',
     });
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            router.push('/dashboard');
+        }
+    }, [isAuthenticated, router]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;

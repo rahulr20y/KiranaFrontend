@@ -1,4 +1,13 @@
 import Head from 'next/head'
+import { serverSideTranslations } from 'next-i18next/pages/serverSideTranslations';
+
+export async function getStaticProps({ locale }) {
+    return {
+        props: {
+            ...(await serverSideTranslations(locale, ['common'])),
+        },
+    };
+}
 import Navbar from '../components/Navbar'
 import Hero from '../components/Hero'
 import Features from '../components/Features'

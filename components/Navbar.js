@@ -33,7 +33,10 @@ export default function Navbar() {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.5 }}
                     >
-                        <Link href="/" className={styles.logo}>
+                        <Link 
+                            href={isAuthenticated ? "/dashboard" : "/"} 
+                            className={styles.logo}
+                        >
                             <Package className={styles.logoIcon} />
                             <span>Kirana</span>
                         </Link>
@@ -42,26 +45,42 @@ export default function Navbar() {
                     <ul className={styles.navLinks}>
                         {isAuthenticated ? (
                             <>
-                                <li><Link href="/products" className={router.pathname === '/products' ? styles.active : ''}>{t('dashboard.products')}</Link></li>
-                                <li><Link href="/dashboard" className={router.pathname === '/dashboard' ? styles.active : ''}>{t('dashboard.title')}</Link></li>
+                                <li>
+                                    <Link 
+                                        href="/dashboard" 
+                                        className={router.pathname === '/dashboard' ? styles.active : ''}
+                                    >
+                                        {t('dashboard.title')}
+                                    </Link>
+                                </li>
                                 {user?.user_type === 'shopkeeper' && (
-                                    <li>
-                                        <Link href="/cart" className={styles.cartLink}>
-                                            <div className={styles.cartIconWrapper}>
-                                                <ShoppingCart size={20} />
-                                                {cartCount > 0 && (
-                                                    <span className={styles.cartBadge}>{cartCount}</span>
-                                                )}
-                                            </div>
-                                            <span>{t('dashboard.cart')}</span>
-                                        </Link>
-                                    </li>
+                                    <>
+                                        <li>
+                                            <Link 
+                                                href="/products" 
+                                                className={router.pathname === '/products' ? styles.active : ''}
+                                            >
+                                                {t('dashboard.products')}
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <Link href="/cart" className={styles.cartLink}>
+                                                <div className={styles.cartIconWrapper}>
+                                                    <ShoppingCart size={20} />
+                                                    {cartCount > 0 && (
+                                                        <span className={styles.cartBadge}>{cartCount}</span>
+                                                    )}
+                                                </div>
+                                                <span>{t('dashboard.cart')}</span>
+                                            </Link>
+                                        </li>
+                                    </>
                                 )}
                             </>
                         ) : (
                             <>
-                                <li><a href="#features">Features</a></li>
-                                <li><a href="#roles">For Partners</a></li>
+                                <li><Link href="/#features">Features</Link></li>
+                                <li><Link href="/#roles">For Partners</Link></li>
                             </>
                         )}
                     </ul>
