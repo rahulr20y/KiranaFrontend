@@ -170,6 +170,10 @@ export default function DealerAnalytics({ stats, varianceData }) {
                     <span className={styles.metricVal}>{staff.orders_processed}</span>
                     <span className={styles.metricLabel}>Orders Fulfilled</span>
                   </div>
+                  <div className={styles.performanceMetric} style={{ marginLeft: '20px', borderLeft: '1px solid #e2e8f0', paddingLeft: '20px' }}>
+                    <span className={styles.metricVal} style={{ color: '#10b981' }}>₹{staff.total_incentives}</span>
+                    <span className={styles.metricLabel}>Total Incentives</span>
+                  </div>
                   <div className={styles.performanceBarContainer}>
                     <div 
                       className={styles.performanceBar} 

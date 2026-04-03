@@ -1189,6 +1189,8 @@ export default function DealerDashboard_v3() {
                                             business_name: dealerProfile?.business_name || '',
                                             business_category: dealerProfile?.business_category || 'General',
                                             gst_number: dealerProfile?.gst_number || '',
+                                            latitude: dealerProfile?.latitude || '',
+                                            longitude: dealerProfile?.longitude || '',
                                         });
                                         setIsEditingProfile(!isEditingProfile);
                                     }}
@@ -1241,6 +1243,30 @@ export default function DealerDashboard_v3() {
                                             onChange={(e) => setProfileFormData({...profileFormData, gst_number: e.target.value})}
                                         />
                                     </div>
+                                    <div className={styles.formRow}>
+                                        <div className={styles.formGroup}>
+                                            <label>Warehouse Latitude</label>
+                                            <input 
+                                                type="number" 
+                                                step="any"
+                                                name="latitude"
+                                                value={profileFormData.latitude || ''}
+                                                onChange={(e) => setProfileFormData({...profileFormData, latitude: e.target.value})}
+                                                placeholder="e.g. 12.9716"
+                                            />
+                                        </div>
+                                        <div className={styles.formGroup}>
+                                            <label>Warehouse Longitude</label>
+                                            <input 
+                                                type="number" 
+                                                step="any"
+                                                name="longitude"
+                                                value={profileFormData.longitude || ''}
+                                                onChange={(e) => setProfileFormData({...profileFormData, longitude: e.target.value})}
+                                                placeholder="e.g. 77.5946"
+                                            />
+                                        </div>
+                                    </div>
                                     <button type="submit" className={styles.primaryBtn}>Save Changes</button>
                                 </form>
                             ) : (
@@ -1260,6 +1286,10 @@ export default function DealerDashboard_v3() {
                                     <div className={styles.infoField}>
                                         <label>GST Number</label>
                                         <p>{dealerProfile?.gst_number || 'N/A'}</p>
+                                    </div>
+                                    <div className={styles.infoField}>
+                                        <label>Warehouse Location</label>
+                                        <p>{dealerProfile?.latitude ? `${dealerProfile.latitude}, ${dealerProfile.longitude}` : 'Not Set'}</p>
                                     </div>
                                     <div className={styles.infoField}>
                                         <label>Business Rating</label>
@@ -1391,6 +1421,7 @@ export default function DealerDashboard_v3() {
                                                     <div style={{ flex: 1 }}>
                                                         <div style={{ fontWeight: '700', color: '#1e293b', fontSize: '15px' }}>{member.username}</div>
                                                         <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>{member.role}</div>
+                                                        <div style={{ fontSize: '11px', color: '#10b981', fontWeight: '600', marginTop: '4px' }}>Incentives: ₹{member.total_incentives || '0'}</div>
                                                     </div>
                                                     <div style={{ fontSize: '10px', fontWeight: '800', background: '#ecfdf5', color: '#059669', padding: '4px 10px', borderRadius: '100px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Active</div>
                                                 </div>
