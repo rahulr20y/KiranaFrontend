@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useCart } from '../lib/cartContext';
 import { useAuth } from '../lib/authContext';
-import { ordersAPI } from '../lib/api';
+import { ordersAPI, paymentsAPI } from '../lib/api';
 import Navbar from '../components/Navbar';
 import styles from '../styles/cart.module.css';
 
@@ -13,11 +13,24 @@ export default function Cart() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [khataSummary, setKhataSummary] = useState(null);
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            paymentsAPI.getSummary().then(res => setKhataSummary(res.data)).catch(console.error);
+        }
+    }, [isAuthenticated]);
 
     if (!isAuthenticated) {
         if (typeof window !== 'undefined') router.push('/login');
         return null;
     }
+
+    const availableCredits = khataSummary?.ledger_by_dealer?.filter(d => 
+        cartItems.some(item => String(item.dealer_id) === String(d.dealer_id)) && d.balance < 0
+    ) || [];
+    
+    const totalAvailableCredit = availableCredits.reduce((acc, curr) => acc + Math.abs(curr.balance), 0);
 
     const handlePlaceOrder = async () => {
         if (cartItems.length === 0) return;
@@ -28,8 +41,9 @@ export default function Cart() {
         try {
             // Group items by dealer
             const itemsByDealer = cartItems.reduce((acc, item) => {
-                if (!acc[item.dealer_id]) acc[item.dealer_id] = [];
-                acc[item.dealer_id].push(item);
+                const dId = String(item.dealer_id);
+                if (!acc[dId]) acc[dId] = [];
+                acc[dId].push(item);
                 return acc;
             }, {});
 
@@ -47,7 +61,7 @@ export default function Cart() {
                 await ordersAPI.createOrder({
                     items,
                     dealer_id: dealerId,
-                    shipping_address: user?.address || 'Main Street, City', // Placeholder
+                    shipping_address: user?.address || 'Main Street, City', 
                     notes: 'Order from Kirana Shopping Cart'
                 });
             }
@@ -144,15 +158,33 @@ export default function Cart() {
                                     <span>-₹{(cartItems.reduce((acc, item) => acc + (item.base_price * item.quantity), 0) - cartTotal).toLocaleString()}</span>
                                 </div>
                             )}
+                            
+                            {totalAvailableCredit > 0 && (
+                                <div className={styles.summaryRow} style={{ color: '#0369a1', background: '#f0f9ff', padding: '8px', margin: '10px -15px', paddingLeft: '15px', paddingRight: '15px' }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                        <span style={{ fontWeight: '600' }}>✨ Return Credits Available</span>
+                                        <span style={{ fontSize: '10px' }}>From approved returns</span>
+                                    </div>
+                                    <span style={{ fontWeight: 'bold' }}>₹{totalAvailableCredit.toLocaleString()}</span>
+                                </div>
+                            )}
+
                             <div className={styles.summaryRow}>
                                 <span>Shipping</span>
                                 <span className={styles.free}>FREE</span>
                             </div>
                             <hr />
                             <div className={`${styles.summaryRow} ${styles.total}`}>
-                                <span>Total Payable</span>
+                                <span>Current Total</span>
                                 <span>₹{cartTotal.toLocaleString()}</span>
                             </div>
+
+                            {totalAvailableCredit > 0 && (
+                                <div style={{ fontSize: '12px', color: '#64748b', textAlign: 'center', marginBottom: '15px', fontStyle: 'italic' }}>
+                                    Your available credit will be automatically deducted from your Digital Ledger balance after placing this order.
+                                </div>
+                            )}
+
                             <button 
                                 className={styles.checkoutBtn} 
                                 onClick={handlePlaceOrder}

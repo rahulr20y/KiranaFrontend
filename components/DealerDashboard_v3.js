@@ -1,5 +1,20 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { 
+    Users, 
+    Package, 
+    ShoppingCart, 
+    Bell, 
+    TrendingUp, 
+    CreditCard, 
+    RotateCcw, 
+    ChevronRight, 
+    CheckCircle, 
+    XCircle, 
+    Clock, 
+    FileText,
+    ArrowRight
+} from 'lucide-react';
 import { productsAPI, dealersAPI, notificationsAPI, paymentsAPI, ordersAPI, shopkeepersAPI, returnsAPI } from '../lib/api';
+
 import styles from '../styles/dashboard.module.css';
 import toastStyles from '../styles/toast.module.css';
 import NotificationToast from './NotificationToast';
@@ -88,7 +103,7 @@ export default function DealerDashboard_v3() {
             setShopkeepers(Array.isArray(shopkeepersRes.data.results) ? shopkeepersRes.data.results : (Array.isArray(shopkeepersRes.data) ? shopkeepersRes.data : []));
             setOrders(Array.isArray(ordersRes.data.results) ? ordersRes.data.results : (Array.isArray(ordersRes.data) ? ordersRes.data : []));
             setStats(statsRes.data);
-            setReturns(Array.isArray(returnsRes.data) ? returnsRes.data : []);
+            setReturns(Array.isArray(returnsRes.data.results) ? returnsRes.data.results : (Array.isArray(returnsRes.data) ? returnsRes.data : []));
             
             // Auto-toast for low stock if we just fetched
             const productsArr = Array.isArray(productsRes.data.results) ? productsRes.data.results : (Array.isArray(productsRes.data) ? productsRes.data : []);
@@ -358,19 +373,35 @@ export default function DealerDashboard_v3() {
             {success && <div className={styles.successAlert}>{success}</div>}
 
             <div className={styles.statsGrid}>
-                <div className={styles.statCard}>
-                    <div className={styles.statNumber}>{products.length}</div>
-                    <div className={styles.statLabel}>Total Products</div>
+                <div className={`${styles.statCard} premium-card`}>
+                    <div className={styles.statIcon} style={{ background: 'rgba(99, 102, 241, 0.1)', color: 'var(--primary)' }}>
+                        <Package size={24} />
+                    </div>
+                    <div>
+                        <div className={styles.statNumber}>{products.length}</div>
+                        <div className={styles.statLabel}>Live Products</div>
+                    </div>
                 </div>
-                <div className={styles.statCard}>
-                    <div className={styles.statNumber}>{dealerProfile?.rating || '0.0'}</div>
-                    <div className={styles.statLabel}>Average Rating</div>
+                <div className={`${styles.statCard} premium-card`}>
+                    <div className={styles.statIcon} style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>
+                        <ShoppingCart size={24} />
+                    </div>
+                    <div>
+                        <div className={styles.statNumber}>{stats?.total_orders || '0'}</div>
+                        <div className={styles.statLabel}>Total Sales</div>
+                    </div>
                 </div>
-                <div className={styles.statCard}>
-                    <div className={styles.statNumber}>{dealerProfile?.total_orders || '0'}</div>
-                    <div className={styles.statLabel}>Total Orders</div>
+                <div className={`${styles.statCard} premium-card`}>
+                    <div className={styles.statIcon} style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
+                        <CreditCard size={24} />
+                    </div>
+                    <div>
+                        <div className={styles.statNumber}>₹{stats?.total_amount || '0'}</div>
+                        <div className={styles.statLabel}>Revenue</div>
+                    </div>
                 </div>
             </div>
+
 
             <div className={styles.tabsContainer}>
                 <div className={styles.tabs}>
@@ -414,7 +445,11 @@ export default function DealerDashboard_v3() {
                         className={`${styles.tab} ${activeTab === 'returns' ? styles.active : ''}`}
                         onClick={() => setActiveTab('returns')}
                     >
-                        Returns {Array.isArray(returns) && returns.filter(r => r.status === 'pending').length > 0 && `(${returns.filter(r => r.status === 'pending').length})`}
+                        <RotateCcw size={18} />
+                        <span>Returns</span>
+                        {returns.filter(r => r.status === 'pending').length > 0 && (
+                            <span className={styles.tabBadge}>{returns.filter(r => r.status === 'pending').length}</span>
+                        )}
                     </button>
                 </div>
 
@@ -797,68 +832,111 @@ export default function DealerDashboard_v3() {
                     {activeTab === 'returns' && (
                         <div className={styles.returnsTab}>
                             <div className={styles.sectionHeader}>
-                                <h2>Manage Returns & Claims</h2>
-                                <span className={styles.subtitle}>Handle damaged goods reports from shopkeepers</span>
+                                <div>
+                                    <h2>Return Claims</h2>
+                                    <p className={styles.subtitle}>Process damaged goods and refund requests</p>
+                                </div>
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                    <button 
+                                        className={styles.secondaryBtn} 
+                                        onClick={() => fetchData()}
+                                        style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
+                                    >
+                                        🔄 Sync
+                                    </button>
+                                    <div className={styles.infoBadge}>
+                                        <RotateCcw size={14} />
+                                        <span>{returns.filter(r => r.status === 'pending').length} Actions Required</span>
+                                    </div>
+                                </div>
                             </div>
+
+                            
                             {returns && returns.length > 0 ? (
-                                <div className={styles.returnsGrid}>
-                                    <table className={styles.table}>
-                                        <thead>
-                                            <tr>
-                                                <th>Shopkeeper</th>
-                                                <th>Order Reference</th>
-                                                <th>Product</th>
-                                                <th>Qty</th>
-                                                <th>Reason</th>
-                                                <th>Status</th>
-                                                <th>Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {returns.map(ret => (
-                                                <tr key={ret.id}>
-                                                    <td>{ret.shopkeeper_name}</td>
-                                                    <td>#{ret.order_number?.substring(0, 8)}</td>
-                                                    <td>{ret.product_name}</td>
-                                                    <td>{ret.quantity}</td>
-                                                    <td title={ret.reason}>{ret.reason?.substring(0, 50)}...</td>
-                                                    <td>
-                                                        <span className={`${styles.statusBadge} ${styles['status_' + ret.status?.toLowerCase()]}`}>
-                                                            {ret.status}
-                                                        </span>
-                                                    </td>
-                                                    <td>
-                                                        {ret.status === 'pending' && (
-                                                            <div style={{ display: 'flex', gap: '5px' }}>
-                                                                <button 
-                                                                    className={styles.btnSmall} 
-                                                                    style={{ background: '#10b981', color: '#fff' }}
-                                                                    onClick={() => handleApproveReturn(ret.id)}
-                                                                >
-                                                                    Approve & Credit
-                                                                </button>
-                                                                <button 
-                                                                    className={styles.btnSmallDanger}
-                                                                    onClick={() => handleRejectReturn(ret.id)}
-                                                                >
-                                                                    Reject
-                                                                </button>
-                                                            </div>
-                                                        )}
-                                                        {ret.status !== 'pending' && (
-                                                            <small style={{ color: '#64748b' }}>Processed</small>
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                <div className={styles.returnsList}>
+                                    {returns.map(ret => (
+                                        <div key={ret.id} className={`${styles.returnCard} premium-card`}>
+                                            <div className={styles.returnCardHeader}>
+                                                <div className={styles.returnShopkeeper}>
+                                                    <Users size={16} />
+                                                    <strong>{ret.shopkeeper_name}</strong>
+                                                </div>
+                                                <div className={styles.returnMeta}>
+                                                    <span className={styles.refLabel}>Order: <strong>#{ret.order_number?.substring(0, 8)}</strong></span>
+                                                    <span className={`${styles.statusBadge} ${styles['status_' + ret.status?.toLowerCase()]}`}>
+                                                        {ret.status === 'pending' && <Clock size={12} />}
+                                                        {ret.status === 'approved' && <CheckCircle size={12} />}
+                                                        {ret.status === 'rejected' && <XCircle size={12} />}
+                                                        {ret.status}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className={styles.returnCardBody}>
+                                                <div className={styles.returnItemInfo}>
+                                                    <h3>{ret.product_name}</h3>
+                                                    <p>Requested Qty: <strong>{ret.quantity} Units</strong></p>
+                                                    <div className={styles.returnReasonBox}>
+                                                        <span className={styles.label}>Claim Reason:</span>
+                                                        <p>{ret.reason}</p>
+                                                    </div>
+                                                </div>
+
+                                                <div className={styles.returnActions}>
+                                                    {ret.status === 'pending' ? (
+                                                        <>
+                                                            <button 
+                                                                className={styles.primaryBtn}
+                                                                style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}
+                                                                onClick={() => handleApproveReturn(ret.id)}
+                                                            >
+                                                                <CheckCircle size={16} />
+                                                                <span>Approve & Credit</span>
+                                                            </button>
+                                                            <button 
+                                                                className={styles.secondaryBtn}
+                                                                style={{ color: '#ef4444', borderColor: '#fecdd3' }}
+                                                                onClick={() => handleRejectReturn(ret.id)}
+                                                            >
+                                                                <XCircle size={16} />
+                                                                <span>Reject Claim</span>
+                                                            </button>
+                                                        </>
+                                                    ) : (
+                                                        <div className={styles.processedBadge}>
+                                                            <FileText size={16} />
+                                                            <span>Request Processed</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {ret.dealer_notes && (
+                                                <div className={styles.dealerFeedback}>
+                                                    <strong>Your Notes:</strong>
+                                                    <p>{ret.dealer_notes}</p>
+                                                </div>
+                                            )}
+                                            
+                                            <div className={styles.returnCardFooter}>
+                                                <span className={styles.returnDate}>Request Date: {new Date(ret.created_at).toLocaleDateString()}</span>
+                                                <div className={styles.creditAmount}>
+                                                    Value: <strong>₹{(ret.quantity * 100).toLocaleString()}</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             ) : (
-                                <p className={styles.emptyMessage}>No return requests to display.</p>
+                                <div className={styles.emptyState}>
+                                    <div className={styles.emptyIcon}>✨</div>
+                                    <h3>Zero Claims!</h3>
+                                    <p>Your shopkeepers haven&apos;t raised any return requests. Your supply chain is holding up great!</p>
+                                </div>
                             )}
                         </div>
                     )}
+
 
                 {activeTab === 'profile' && (
                         <div className={styles.profileTab}>
