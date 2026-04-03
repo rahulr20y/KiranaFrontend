@@ -15,7 +15,8 @@ import {
     ArrowRight,
     MapPin,
     Truck,
-    Map
+    Map,
+    Award
 } from 'lucide-react';
 import { productsAPI, dealersAPI, notificationsAPI, paymentsAPI, ordersAPI, shopkeepersAPI, returnsAPI } from '../lib/api';
 
@@ -882,7 +883,7 @@ export default function DealerDashboard_v3() {
                             <div className={styles.sectionHeader}>
                                 <div>
                                     <h2>Delivery Manifest</h2>
-                                    <p className={styles.subtitle}>Optimized multi-stop route for today's deliveries</p>
+                                    <p className={styles.subtitle}>Optimized multi-stop route for today&apos;s deliveries</p>
                                 </div>
                                 <div className={styles.routeStats}>
                                     <div className={styles.infoBadge}>
@@ -958,7 +959,7 @@ export default function DealerDashboard_v3() {
                             ) : (
                                 <div className={styles.emptyState}>
                                     <Truck size={48} color="var(--text-muted)" style={{ opacity: 0.3 }} />
-                                    <p>No stops assigned for today. Move orders to "Shipped" to see them here.</p>
+                                    <p>No stops assigned for today. Move orders to &quot;Shipped&quot; to see them here.</p>
                                 </div>
                             )}
                         </div>
