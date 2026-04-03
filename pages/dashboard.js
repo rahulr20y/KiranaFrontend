@@ -34,7 +34,7 @@ export default function Dashboard() {
     return (
         <div className={styles.page}>
             <Navbar />
-            {(user?.user_type === 'dealer' || user?.user_type === 'staff') ? (
+            {(user?.user_type === 'dealer' || user?.user_type === 'dealer_staff' || user?.user_type === 'staff') ? (
                 <DealerDashboard_v3 />
             ) : (
                 <ShopkeeperDashboard_v3 />
