@@ -33,5 +33,10 @@
     "browse": "उत्पाद देखें",
     "add_to_cart": "कार्ट में जोड़ें",
     "place_order": "ऑर्डर दें"
+  },
+  "navbar": {
+    "features": "विशेषताएं",
+    "partners": "पार्टनर्स के लिए",
+    "change_language": "भाषा बदलें"
   }
 }

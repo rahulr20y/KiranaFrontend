@@ -12,6 +12,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { useAuth } from '../lib/authContext';
 import GoogleSignInButton from '../components/GoogleSignInButton';
+import Navbar from '../components/Navbar';
 import styles from '../styles/auth.module.css';
 
 export default function Signup() {
@@ -125,7 +126,9 @@ export default function Signup() {
     };
 
     return (
-        <div className={styles.container}>
+        <>
+            <Navbar />
+            <div className={styles.container}>
             <div className={styles.formWrapper}>
                 <div className={styles.formHeader}>
                     <h1>Join Kirana</h1>
@@ -291,6 +294,7 @@ export default function Signup() {
                     </Link>
                 </p>
             </div>
-        </div>
+            </div>
+        </>
     );
 }

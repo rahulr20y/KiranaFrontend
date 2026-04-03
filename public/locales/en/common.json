@@ -33,5 +33,10 @@
     "browse": "Browse Products",
     "add_to_cart": "Add to Cart",
     "place_order": "Place Order"
+  },
+  "navbar": {
+    "features": "Features",
+    "partners": "For Partners",
+    "change_language": "Change Language"
   }
 }

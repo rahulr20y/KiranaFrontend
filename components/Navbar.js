@@ -4,7 +4,7 @@ import { useAuth } from '../lib/authContext'
 import { useCart } from '../lib/cartContext'
 import { LogOut, LayoutDashboard, ShoppingCart, Package, Globe } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { useTranslation } from 'next-i18next/pages'
+import { useTranslation } from 'next-i18next'
 import styles from '../styles/navbar.module.css'
 
 export default function Navbar() {
@@ -79,14 +79,14 @@ export default function Navbar() {
                             </>
                         ) : (
                             <>
-                                <li><Link href="/#features">Features</Link></li>
-                                <li><Link href="/#roles">For Partners</Link></li>
+                                <li><Link href="/#features">{t('navbar.features')}</Link></li>
+                                <li><Link href="/#roles">{t('navbar.partners')}</Link></li>
                             </>
                         )}
                     </ul>
 
                     <div className={styles.authActions}>
-                        <button className={styles.langToggle} onClick={toggleLanguage} title="Change Language">
+                        <button className={styles.langToggle} onClick={toggleLanguage} title={t('navbar.change_language')}>
                             <Globe size={18} />
                             <span>{i18n.language === 'en' ? 'हिन्दी' : 'EN'}</span>
                         </button>
@@ -98,7 +98,7 @@ export default function Navbar() {
                                     <span className={styles.userBadge}>{user?.user_type}</span>
                                 </div>
                                 <div className={styles.divider} />
-                                <button className={styles.logoutBtn} onClick={handleLogout} title="Logout">
+                                <button className={styles.logoutBtn} onClick={handleLogout} title={t('auth.logout')}>
                                     <LogOut size={18} />
                                 </button>
                             </div>
