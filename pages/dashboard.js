@@ -7,15 +7,22 @@ const DealerDashboard_v3 = dynamic(() => import('../components/DealerDashboard_v
 const ShopkeeperDashboard_v3 = dynamic(() => import('../components/ShopkeeperDashboard_v3'), { ssr: false });
 import styles from '../styles/dashboard.module.css';
 
-import { appWithTranslation } from 'next-i18next/pages';
 import { serverSideTranslations } from 'next-i18next/pages/serverSideTranslations';
+import nextI18NextConfig from '../next-i18next.config.js';
 
 export async function getServerSideProps({ locale }) {
-    return {
-        props: {
-            ...(await serverSideTranslations(locale, ['common'])),
-        },
-    };
+    try {
+        const translations = await serverSideTranslations(locale, ['common'], nextI18NextConfig);
+        return {
+            props: {
+                ...translations,
+            },
+        };
+    } catch (error) {
+        console.error("Error in getServerSideProps:", error);
+        // Returning a 500 status code manually if preferred, or just let Next handle it
+        throw error;
+    }
 }
 
 export default function Dashboard() {

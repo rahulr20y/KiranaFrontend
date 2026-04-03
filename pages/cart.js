@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { serverSideTranslations } from 'next-i18next/pages/serverSideTranslations';
+import nextI18NextConfig from '../next-i18next.config.js';
 
 export async function getServerSideProps({ locale }) {
     return {
         props: {
-            ...(await serverSideTranslations(locale, ['common'])),
+            ...(await serverSideTranslations(locale, ['common'], nextI18NextConfig)),
         },
     };
 }
