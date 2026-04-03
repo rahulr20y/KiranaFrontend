@@ -1,13 +1,24 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { serverSideTranslations } from 'next-i18next/pages/serverSideTranslations';
+import nextI18NextConfig from '../next-i18next.config.js';
+
+export async function getStaticProps({ locale }) {
+    return {
+        props: {
+            ...(await serverSideTranslations(locale, ['common'], nextI18NextConfig)),
+        },
+    };
+}
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { useAuth } from '../lib/authContext';
 import GoogleSignInButton from '../components/GoogleSignInButton';
+import Navbar from '../components/Navbar';
 import styles from '../styles/auth.module.css';
 
 export default function Signup() {
     const router = useRouter();
-    const { register, error: authError, clearError } = useAuth();
+    const { register, isAuthenticated, error: authError, clearError } = useAuth();
     const [formData, setFormData] = useState({
         username: '',
         email: '',
@@ -21,6 +32,12 @@ export default function Signup() {
     const [error, setError] = useState('');
     const [fieldErrors, setFieldErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            router.push('/dashboard');
+        }
+    }, [isAuthenticated, router]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -110,7 +127,9 @@ export default function Signup() {
     };
 
     return (
-        <div className={styles.container}>
+        <>
+            <Navbar />
+            <div className={styles.container}>
             <div className={styles.formWrapper}>
                 <div className={styles.formHeader}>
                     <h1>Join Kirana</h1>
@@ -276,6 +295,7 @@ export default function Signup() {
                     </Link>
                 </p>
             </div>
-        </div>
+            </div>
+        </>
     );
 }

@@ -1,3 +1,4 @@
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { 
     Users, 
     Package, 
@@ -11,7 +12,11 @@ import {
     XCircle, 
     Clock, 
     FileText,
-    ArrowRight
+    ArrowRight,
+    MapPin,
+    Truck,
+    Map,
+    Award
 } from 'lucide-react';
 import { productsAPI, dealersAPI, notificationsAPI, paymentsAPI, ordersAPI, shopkeepersAPI, returnsAPI } from '../lib/api';
 
@@ -22,8 +27,21 @@ import { useNotifications } from '../lib/notificationContext';
 import NotificationBell from './NotificationBell';
 import DealerAnalytics from './DealerAnalytics';
 import { generateInvoicePDF } from '../lib/invoice';
+import { useAuth } from '../lib/authContext';
 
 export default function DealerDashboard_v3() {
+    const { user } = useAuth();
+    const isStaff = user?.user_type === 'dealer_staff';
+    const [staff, setStaff] = useState([]);
+    const [showStaffForm, setShowStaffForm] = useState(false);
+    const [staffFormData, setStaffFormData] = useState({
+        username: '',
+        email: '',
+        role: 'Delivery Manager',
+        can_manage_orders: true,
+        can_manage_inventory: false,
+        can_view_analytics: false
+    });
     const [products, setProducts] = useState([]);
     const [dealerProfile, setDealerProfile] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -61,6 +79,7 @@ export default function DealerDashboard_v3() {
     const [ledgerLoading, setLedgerLoading] = useState(false);
     const [stats, setStats] = useState(null);
     const [returns, setReturns] = useState([]);
+    const [routePlan, setRoutePlan] = useState(null);
     const [showEditProduct, setShowEditProduct] = useState(false);
     const [editProductData, setEditProductData] = useState({
         name: '',
@@ -71,6 +90,11 @@ export default function DealerDashboard_v3() {
     });
     const fileInputRef = useRef(null);
     const lastToastedId = useRef(null);
+    const [showAuditModal, setShowAuditModal] = useState(false);
+    const [activeAuditLogs, setActiveAuditLogs] = useState([]);
+    const [activeAuditProduct, setActiveAuditProduct] = useState(null);
+    const [varianceData, setVarianceData] = useState(null);
+    const [staffLocations, setStaffLocations] = useState([]);
 
     const addToast = useCallback((message, type = 'info') => {
         const id = Date.now();
@@ -116,6 +140,36 @@ export default function DealerDashboard_v3() {
                 business_category: profileRes.data.business_category || '',
                 gst_number: profileRes.data.gst_number || '',
             });
+
+            // Fetch Route Plan
+            try {
+                const routeRes = await ordersAPI.getRoutePlan();
+                setRoutePlan(routeRes.data);
+            } catch (rErr) {
+                console.warn("Failed to fetch route plan", rErr);
+            }
+
+            // Fetch Staff if Dealer
+            if (!isStaff) {
+                try {
+                    const staffRes = await dealersAPI.getStaff();
+                    setStaff(staffRes.data);
+                    // Live Staff Tracking
+                    const locRes = await dealersAPI.getStaffLocations();
+                    setStaffLocations(locRes.data);
+                } catch (sErr) {
+                    console.warn("Failed to fetch staff", sErr);
+                }
+                
+                // Inventory Variance Report
+                try {
+                    const varRes = await productsAPI.getVarianceReport();
+                    setVarianceData(varRes.data);
+                } catch (vErr) {
+                    console.warn("Failed to fetch variance report", vErr);
+                }
+            }
+
             setError('');
         } catch (err) {
             setError('Failed to load dealer information');
@@ -201,6 +255,81 @@ export default function DealerDashboard_v3() {
             setLedgerLoading(false);
         }
     };
+
+    const handleViewAuditLogs = async (product) => {
+        try {
+            setLoading(true);
+            setActiveAuditProduct(product);
+            const res = await productsAPI.getAuditLogs(product.id);
+            setActiveAuditLogs(res.data);
+            setShowAuditModal(true);
+        } catch (err) {
+            addToast('Failed to load inventory audit logs', 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleQuickStockUpdate = async (product) => {
+        const amount = prompt(`Update stock for ${product.name}. Current: ${product.stock_quantity}. Enter change (e.g., +50 or -10):`);
+        if (!amount || isNaN(amount)) return;
+        
+        const reason = prompt('Reason for change (restock, sale, return, correction):', 'restock');
+        if (!reason) return;
+        
+        const notes = prompt('Additional notes (optional):');
+        
+        try {
+            setLoading(true);
+            await productsAPI.updateStock(product.id, { 
+                amount: parseInt(amount), 
+                reason, 
+                notes 
+            });
+            addToast('Stock updated successfully', 'success');
+            fetchData();
+        } catch (err) {
+            addToast('Failed to update stock', 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
+    const simulateStaffMovement = async () => {
+        if (!isStaff || typeof window === 'undefined') return;
+        
+        // Mock movement around a central point (e.g., Bangalore center)
+        const center = { lat: 12.9716, lng: 77.5946 };
+        const offset = (Math.random() - 0.5) * 0.01;
+        const newLat = center.lat + offset;
+        const newLng = center.lng + offset;
+        
+        try {
+            await dealersAPI.updateStaffLocation(newLat, newLng);
+            console.log("Mock location updated:", newLat, newLng);
+        } catch (err) {
+            console.warn("Failed to update mock location", err);
+        }
+    };
+
+    useEffect(() => {
+        let interval;
+        if (isStaff) {
+            // Update location every 20 seconds for staff
+            interval = setInterval(simulateStaffMovement, 20000);
+            simulateStaffMovement(); // Initial
+        } else if (activeTab === 'route') {
+            // Refresh staff locations for dealer every 10 seconds when in route tab
+            const refreshLocations = async () => {
+                try {
+                    const res = await dealersAPI.getStaffLocations();
+                    setStaffLocations(res.data);
+                } catch (err) {}
+            };
+            interval = setInterval(refreshLocations, 10000);
+            refreshLocations();
+        }
+        return () => clearInterval(interval);
+    }, [isStaff, activeTab]);
 
     const handleAddBroadcast = async (e) => {
         e.preventDefault();
@@ -424,17 +553,26 @@ export default function DealerDashboard_v3() {
                         Orders
                     </button>
                     <button
+                        className={`${styles.tab} ${activeTab === 'route' ? styles.active : ''}`}
+                        onClick={() => setActiveTab('route')}
+                    >
+                        <Truck size={18} />
+                        <span>Route</span>
+                    </button>
+                    <button
                         className={`${styles.tab} ${activeTab === 'broadcasts' ? styles.active : ''}`}
                         onClick={() => setActiveTab('broadcasts')}
                     >
                         Broadcasts
                     </button>
-                    <button
-                        className={`${styles.tab} ${activeTab === 'analytics' ? styles.active : ''}`}
-                        onClick={() => setActiveTab('analytics')}
-                    >
-                        📈 Analytics
-                    </button>
+                    {!isStaff && (
+                        <button
+                            className={`${styles.tab} ${activeTab === 'analytics' ? styles.active : ''}`}
+                            onClick={() => setActiveTab('analytics')}
+                        >
+                            📈 Analytics
+                        </button>
+                    )}
                     <button
                         className={`${styles.tab} ${activeTab === 'khata' ? styles.active : ''}`}
                         onClick={() => setActiveTab('khata')}
@@ -700,6 +838,22 @@ export default function DealerDashboard_v3() {
                                                         {product.stock_quantity <= product.low_stock_threshold && (
                                                             <span className={styles.lowStockBadge}>LOW STOCK</span>
                                                         )}
+                                                        <div className={styles.stockActions}>
+                                                            <button 
+                                                                className={styles.auditIconBtn}
+                                                                onClick={() => handleViewAuditLogs(product)}
+                                                                title="View Inventory Audit History"
+                                                            >
+                                                                📊
+                                                            </button>
+                                                            <button 
+                                                                className={styles.auditIconBtn}
+                                                                onClick={() => handleQuickStockUpdate(product)}
+                                                                title="Quick Stock Update"
+                                                            >
+                                                                ✏️
+                                                            </button>
+                                                        </div>
                                                     </td>
                                                     <td>
                                                         <button 
@@ -719,6 +873,93 @@ export default function DealerDashboard_v3() {
                                             ))}
                                         </tbody>
                                     </table>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {activeTab === 'route' && (
+                        <div className={styles.routeTab}>
+                            <div className={styles.sectionHeader}>
+                                <div>
+                                    <h2>Delivery Manifest</h2>
+                                    <p className={styles.subtitle}>Optimized multi-stop route for today&apos;s deliveries</p>
+                                </div>
+                                <div className={styles.routeStats}>
+                                    <div className={styles.infoBadge}>
+                                        <MapPin size={14} />
+                                        <span>{routePlan?.total_stops || 0} Stops</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                             {/* Live Dispatch Monitor */}
+                             {!isStaff && staffLocations.length > 0 && (
+                                 <div className={styles.dispatchMonitor}>
+                                     <div className={styles.monitorHeader}>
+                                         <Award size={16} color="var(--primary)" />
+                                         <h3>📡 Live Dispatch Radar</h3>
+                                     </div>
+                                     <div className={styles.mapMock}>
+                                         {staffLocations.map(staff => (
+                                             <div 
+                                                 key={staff.id} 
+                                                 className={styles.staffPointer}
+                                                 style={{ 
+                                                     left: `${50 + (staff.lng - 77.5946) * 5000}%`,
+                                                     top: `${50 - (staff.lat - 12.9716) * 5000}%`
+                                                 }}
+                                             >
+                                                 <div className={styles.pointerDot} />
+                                                 <div className={styles.pointerName}>{staff.name}</div>
+                                                 <div className={styles.pointerRole}>{staff.role}</div>
+                                             </div>
+                                         ))}
+                                         <div className={styles.mapGridLines} />
+                                         <p className={styles.mapStatus}>Visualizing {staffLocations.length} active units across Bangalore</p>
+                                     </div>
+                                 </div>
+                             )}
+
+                             {routePlan?.clusters ? (
+                                <div className={styles.manifestContainer}>
+                                    {Object.entries(routePlan.clusters).map(([pincode, stops]) => (
+                                        <div key={pincode} className={styles.pincodeCluster}>
+                                            <div className={styles.clusterHeader}>
+                                                <Map size={18} />
+                                                <h3>Neighborhood: {pincode}</h3>
+                                                <span className={styles.stopCount}>{stops.length} stops</span>
+                                            </div>
+                                            <div className={styles.stopList}>
+                                                {stops.map((stop) => (
+                                                    <div key={stop.order_id} className={styles.stopCard}>
+                                                        <div className={styles.stopSequence}>{stop.sequence}</div>
+                                                        <div className={styles.stopDetails}>
+                                                            <div className={styles.stopName}>{stop.shop_name}</div>
+                                                            <div className={styles.stopAddress}>{stop.address}</div>
+                                                            <div className={styles.stopMeta}>
+                                                                <span className={styles.orderLabel}>Order #{stop.order_number}</span>
+                                                                <span className={styles.etaLabel}>ETA: {new Date(stop.eta).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                                            </div>
+                                                        </div>
+                                                        <button 
+                                                            className={styles.secondaryBtn}
+                                                            style={{ padding: '6px 12px', fontSize: '0.75rem' }}
+                                                            onClick={() => alert(`Starting Navigation to ${stop.shop_name}`)}
+                                                        >
+                                                            <MapPin size={14} style={{ marginRight: '4px' }} />
+                                                            Navigate
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className={styles.emptyState}>
+                                    <Truck size={48} color="var(--text-muted)" style={{ opacity: 0.3 }} />
+                                    <p>No stops assigned for today. Move orders to &quot;Shipped&quot; to see them here.</p>
                                 </div>
                             )}
                         </div>
@@ -949,6 +1190,8 @@ export default function DealerDashboard_v3() {
                                             business_name: dealerProfile?.business_name || '',
                                             business_category: dealerProfile?.business_category || 'General',
                                             gst_number: dealerProfile?.gst_number || '',
+                                            latitude: dealerProfile?.latitude || '',
+                                            longitude: dealerProfile?.longitude || '',
                                         });
                                         setIsEditingProfile(!isEditingProfile);
                                     }}
@@ -1001,6 +1244,30 @@ export default function DealerDashboard_v3() {
                                             onChange={(e) => setProfileFormData({...profileFormData, gst_number: e.target.value})}
                                         />
                                     </div>
+                                    <div className={styles.formRow}>
+                                        <div className={styles.formGroup}>
+                                            <label>Warehouse Latitude</label>
+                                            <input 
+                                                type="number" 
+                                                step="any"
+                                                name="latitude"
+                                                value={profileFormData.latitude || ''}
+                                                onChange={(e) => setProfileFormData({...profileFormData, latitude: e.target.value})}
+                                                placeholder="e.g. 12.9716"
+                                            />
+                                        </div>
+                                        <div className={styles.formGroup}>
+                                            <label>Warehouse Longitude</label>
+                                            <input 
+                                                type="number" 
+                                                step="any"
+                                                name="longitude"
+                                                value={profileFormData.longitude || ''}
+                                                onChange={(e) => setProfileFormData({...profileFormData, longitude: e.target.value})}
+                                                placeholder="e.g. 77.5946"
+                                            />
+                                        </div>
+                                    </div>
                                     <button type="submit" className={styles.primaryBtn}>Save Changes</button>
                                 </form>
                             ) : (
@@ -1022,6 +1289,10 @@ export default function DealerDashboard_v3() {
                                         <p>{dealerProfile?.gst_number || 'N/A'}</p>
                                     </div>
                                     <div className={styles.infoField}>
+                                        <label>Warehouse Location</label>
+                                        <p>{dealerProfile?.latitude ? `${dealerProfile.latitude}, ${dealerProfile.longitude}` : 'Not Set'}</p>
+                                    </div>
+                                    <div className={styles.infoField}>
                                         <label>Business Rating</label>
                                         <p>⭐ {dealerProfile?.rating || '0.0'}</p>
                                     </div>
@@ -1036,6 +1307,127 @@ export default function DealerDashboard_v3() {
                                     <div className={styles.infoField}>
                                         <label>Member Since</label>
                                         <p>{new Date(dealerProfile?.created_at).toLocaleDateString()}</p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {!isStaff && (
+                                <div className={styles.staffSection} style={{ marginTop: '40px', borderTop: '1px solid #e2e8f0', paddingTop: '30px', paddingBottom: '20px' }}>
+                                    <div className={styles.sectionHeader} style={{ marginBottom: '20px' }}>
+                                        <h3>👥 Staff Management</h3>
+                                        <button 
+                                            className={styles.secondaryBtn}
+                                            onClick={() => setShowStaffForm(!showStaffForm)}
+                                        >
+                                            {showStaffForm ? 'Close' : '+ Add Staff Member'}
+                                        </button>
+                                    </div>
+
+                                    {showStaffForm && (
+                                        <form className={styles.staffForm} style={{ background: '#f8fafc', padding: '24px', borderRadius: '16px', marginBottom: '24px', border: '1px solid #e2e8f0' }} onSubmit={async (e) => {
+                                            e.preventDefault();
+                                            try {
+                                                const res = await dealersAPI.addStaff(staffFormData);
+                                                setStaff(prev => [...prev, res.data]);
+                                                setStaffFormData({ 
+                                                    username: '', 
+                                                    email: '', 
+                                                    role: 'Delivery Manager',
+                                                    can_manage_orders: true,
+                                                    can_manage_inventory: false,
+                                                    can_view_analytics: false
+                                                });
+                                                setShowStaffForm(false);
+                                                addToast('Staff member added!', 'success');
+                                            } catch (err) {
+                                                setError(err.response?.data?.error || 'Failed to add staff');
+                                            }
+                                        }}>
+                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', alignItems: 'flex-end' }}>
+                                                <div className={styles.formGroup} style={{ marginBottom: 0 }}>
+                                                    <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '600' }}>Username</label>
+                                                    <input 
+                                                        placeholder="e.g. rahul_staff"
+                                                        value={staffFormData.username}
+                                                        onChange={e => setStaffFormData({...staffFormData, username: e.target.value})}
+                                                        required
+                                                        style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                                                    />
+                                                </div>
+                                                <div className={styles.formGroup} style={{ marginBottom: 0 }}>
+                                                    <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '600' }}>Email</label>
+                                                    <input 
+                                                        placeholder="staff@email.com"
+                                                        type="email"
+                                                        value={staffFormData.email}
+                                                        onChange={e => setStaffFormData({...staffFormData, email: e.target.value})}
+                                                        required
+                                                        style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                                                    />
+                                                </div>
+                                                <div className={styles.formGroup} style={{ marginBottom: 0 }}>
+                                                    <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '600' }}>Operational Role</label>
+                                                    <select 
+                                                        value={staffFormData.role}
+                                                        onChange={e => setStaffFormData({...staffFormData, role: e.target.value})}
+                                                        style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', background: 'white' }}
+                                                    >
+                                                        <option>Delivery Manager</option>
+                                                        <option>Inventory Clerk</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            
+                                            <div style={{ display: 'flex', gap: '20px', marginTop: '15px', background: 'white', padding: '15px', borderRadius: '10px' }}>
+                                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' }}>
+                                                    <input 
+                                                        type="checkbox" 
+                                                        checked={staffFormData.can_manage_orders} 
+                                                        onChange={e => setStaffFormData({...staffFormData, can_manage_orders: e.target.checked})}
+                                                    /> Orders
+                                                </label>
+                                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' }}>
+                                                    <input 
+                                                        type="checkbox" 
+                                                        checked={staffFormData.can_manage_inventory} 
+                                                        onChange={e => setStaffFormData({...staffFormData, can_manage_inventory: e.target.checked})}
+                                                    /> Inventory
+                                                </label>
+                                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' }}>
+                                                    <input 
+                                                        type="checkbox" 
+                                                        checked={staffFormData.can_view_analytics} 
+                                                        onChange={e => setStaffFormData({...staffFormData, can_view_analytics: e.target.checked})}
+                                                    /> Analytics
+                                                </label>
+                                            </div>
+                                            
+                                            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end' }}>
+                                                <button type="submit" className={styles.primaryBtn} style={{ padding: '11px 30px' }}>Onboard Staff Member</button>
+                                            </div>
+                                        </form>
+                                    )}
+
+                                    <div className={styles.staffList} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+                                        {staff.length === 0 ? (
+                                            <p style={{ color: '#64748b', fontStyle: 'italic', gridColumn: '1/-1', textAlign: 'center', padding: '40px', background: '#f8fafc', borderRadius: '12px' }}>
+                                                No operational staff added yet. Delegate tasks to scale faster.
+                                            </p>
+                                        ) : (
+                                            staff.map((member, idx) => (
+                                                <div key={member.id || idx} style={{ display: 'flex', alignItems: 'center', padding: '20px', background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', gap: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                                                    <div style={{ width: '48px', height: '48px', background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)', color: 'white', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', fontSize: '20px' }}>
+                                                        {member.username?.[0]?.toUpperCase() || 'S'}
+                                                    </div>
+                                                    <div style={{ flex: 1 }}>
+                                                        <div style={{ fontWeight: '700', color: '#1e293b', fontSize: '15px' }}>{member.username}</div>
+                                                        <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>{member.role}</div>
+                                                        <div style={{ fontSize: '11px', color: '#10b981', fontWeight: '600', marginTop: '4px' }}>Incentives: ₹{member.total_incentives || '0'}</div>
+                                                    </div>
+                                                    <div style={{ fontSize: '10px', fontWeight: '800', background: '#ecfdf5', color: '#059669', padding: '4px 10px', borderRadius: '100px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Active</div>
+                                                </div>
+                                            ))
+                                        )}
                                     </div>
                                 </div>
                             )}
@@ -1189,7 +1581,7 @@ export default function DealerDashboard_v3() {
                         </div>
                     )}
 
-                    {activeTab === 'analytics' && <DealerAnalytics stats={stats} />}
+                    {activeTab === 'analytics' && <DealerAnalytics stats={stats} varianceData={varianceData} />}
                 </div>
             </div>
             {/* Notification Toasts */}
@@ -1302,6 +1694,62 @@ export default function DealerDashboard_v3() {
                                 <button type="button" className={styles.secondaryBtn} onClick={() => setShowEditProduct(false)} style={{ flex: 1 }}>Cancel</button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+            {showAuditModal && (
+                <div className={styles.modalOverlay}>
+                    <div className={styles.modalContent} style={{ width: '700px', maxHeight: '80vh', overflowY: 'auto' }}>
+                        <div className={styles.modalHeader}>
+                            <h3>📦 Stock Audit Log: {activeAuditProduct?.name}</h3>
+                            <button onClick={() => setShowAuditModal(false)} className={styles.closeBtn}>×</button>
+                        </div>
+                        <div className={styles.modalBody}>
+                            <div className={styles.auditStats} style={{ display: 'flex', gap: '20px', marginBottom: '20px' }}>
+                                <div className={styles.miniStat}>
+                                    <label>Current Stock</label>
+                                    <p>{activeAuditProduct?.stock_quantity}</p>
+                                </div>
+                                <div className={styles.miniStat}>
+                                    <label>Total Logs</label>
+                                    <p>{activeAuditLogs.length}</p>
+                                </div>
+                            </div>
+                            <table className={styles.auditTable}>
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Modified By</th>
+                                        <th>Change</th>
+                                        <th>Status</th>
+                                        <th>Reason/Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {activeAuditLogs.map(log => (
+                                        <tr key={log.id}>
+                                            <td style={{ fontSize: '11px', whiteSpace: 'nowrap' }}>
+                                                {new Date(log.date).toLocaleString()}
+                                            </td>
+                                            <td style={{ fontWeight: '600' }}>{log.user}</td>
+                                            <td style={{ color: log.change > 0 ? '#10b981' : '#ef4444', fontWeight: 'bold' }}>
+                                                {log.change > 0 ? `+${log.change}` : log.change}
+                                            </td>
+                                            <td><strong>{log.new_stock}</strong></td>
+                                            <td>
+                                                <span className={styles.reasonBadge} style={{ textTransform: 'capitalize' }}>{log.reason}</span>
+                                                <p style={{ margin: '4px 0 0', fontSize: '11px', color: '#64748b' }}>{log.notes || '-'}</p>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {activeAuditLogs.length === 0 && (
+                                        <tr>
+                                            <td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>No audit history found for this product.</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             )}

@@ -1,0 +1,42 @@
+{
+  "dashboard": {
+    "title": "डैशबोर्ड",
+    "welcome": "वापसी पर स्वागत है",
+    "overview": "अवलोकन",
+    "dealers": "डीलर्स",
+    "orders": "ऑर्डर",
+    "broadcasts": "ब्रॉडकास्ट",
+    "khata": "खाता (लेजर)",
+    "returns": "रिटर्न्स",
+    "profile": "प्रोफ़ाइल",
+    "products": "उत्पाद",
+    "cart": "कार्ट",
+    "staff": "स्टाफ प्रबंधन",
+    "route": "डिलीवरी रूट",
+    "analytics": "व्यापार विश्लेषण"
+  },
+  "auth": {
+    "login": "लॉगिन",
+    "signup": "साइन अप",
+    "logout": "लॉगआउट",
+    "register": "रजिस्टर",
+    "forgot_password": "पासवर्ड भूल गए?"
+  },
+  "actions": {
+    "save": "बदलाव सहेजें",
+    "cancel": "रद्द करें",
+    "add": "जोड़ें",
+    "edit": "संपादन",
+    "delete": "हटाएं",
+    "follow": "फॉलो करें",
+    "unfollow": "अनफॉलो करें",
+    "browse": "उत्पाद देखें",
+    "add_to_cart": "कार्ट में जोड़ें",
+    "place_order": "ऑर्डर दें"
+  },
+  "navbar": {
+    "features": "विशेषताएं",
+    "partners": "पार्टनर्स के लिए",
+    "change_language": "भाषा बदलें"
+  }
+}

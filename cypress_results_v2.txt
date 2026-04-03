@@ -1,0 +1,135 @@
+
+> kirana-frontend@1.0.0 cypress:run
+> cypress run --spec cypress/e2e/mock_payment_flow.cy.js,cypress/e2e/damaged_goods_return.cy.js
+
+
+DevTools listening on ws://127.0.0.1:45001/devtools/browser/ebb85b37-aeef-475b-b0b6-626998c9dd2b
+Couldn't find tsconfig.json. tsconfig-paths will be skipped
+Warning: We failed to trash the existing run results.
+
+This error will not affect or change the exit code.
+
+Error: EACCES: permission denied, unlink '/home/rahul/Desktop/Kirana/frontend/cypress/screenshots/google_auth.cy.js/Google Auth — Backend API -- POST usersgoogle-auth returns 400 when id_token is missing (failed).png'
+
+================================================================================
+
+  (Run Starting)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Cypress:        13.6.4                                                                         │
+  │ Browser:        Electron 114 (headless)                                                        │
+  │ Node Version:   v20.20.1 (/home/rahul/.nvm/versions/node/v20.20.1/bin/node)                    │
+  │ Specs:          2 found (mock_payment_flow.cy.js, damaged_goods_return.cy.js)                  │
+  │ Searched:       cypress/e2e/mock_payment_flow.cy.js, cypress/e2e/damaged_goods_return.cy.js    │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                    
+  Running:  mock_payment_flow.cy.js                                                         (1 of 2)
+
+
+  Mock Payment & Ledger Settlement
+    1) should place an order, pay via Mock UPI, and verify ledger settlement
+
+
+  0 passing (18s)
+  1 failing
+
+  1) Mock Payment & Ledger Settlement
+       should place an order, pay via Mock UPI, and verify ledger settlement:
+     AssertionError: Timed out retrying after 10000ms: Expected to find content: 'Inventory' but never did.
+      at Context.eval (webpack://kirana-frontend/./cypress/e2e/mock_payment_flow.cy.js:25:11)
+
+
+
+
+  (Results)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        1                                                                                │
+  │ Passing:      0                                                                                │
+  │ Failing:      1                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  1                                                                                │
+  │ Video:        true                                                                             │
+  │ Duration:     17 seconds                                                                       │
+  │ Spec Ran:     mock_payment_flow.cy.js                                                          │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+  (Screenshots)
+
+  -  /home/rahul/Desktop/Kirana/frontend/cypress/screenshots/mock_payment_flow.cy.js/     (1280x720)
+     Mock Payment & Ledger Settlement -- should place an order, pay via Mock UPI, and               
+      verify ledger settlement (failed).png                                                         
+
+
+  (Video)
+
+  -  Video output: /home/rahul/Desktop/Kirana/frontend/cypress/videos/mock_payment_flow.cy.js.mp4
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                    
+  Running:  damaged_goods_return.cy.js                                                      (2 of 2)
+
+
+  Damaged Goods and Returns Lifecycle
+    1) should allow full lifecycle: Order -> Ship (OTP) -> Deliver -> Return -> Approval -> Credit
+
+
+  0 passing (28s)
+  1 failing
+
+  1) Damaged Goods and Returns Lifecycle
+       should allow full lifecycle: Order -> Ship (OTP) -> Deliver -> Return -> Approval -> Credit:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `.premium-card`, but never found it. Queried from:
+
+              > cy.contains(John813204)
+      at Context.eval (webpack://kirana-frontend/./cypress/e2e/damaged_goods_return.cy.js:64:40)
+
+
+
+
+  (Results)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        1                                                                                │
+  │ Passing:      0                                                                                │
+  │ Failing:      1                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  1                                                                                │
+  │ Video:        true                                                                             │
+  │ Duration:     27 seconds                                                                       │
+  │ Spec Ran:     damaged_goods_return.cy.js                                                       │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+  (Screenshots)
+
+  -  /home/rahul/Desktop/Kirana/frontend/cypress/screenshots/damaged_goods_return.cy.     (1280x720)
+     js/Damaged Goods and Returns Lifecycle -- should allow full lifecycle Order - Sh               
+     ip (OTP) - Deliver - Return - Approval - Credit (failed) (12).png                              
+
+
+  (Video)
+
+  -  Video output: /home/rahul/Desktop/Kirana/frontend/cypress/videos/damaged_goods_return.cy.js.mp4
+
+
+================================================================================
+
+  (Run Finished)
+
+
+       Spec                                              Tests  Passing  Failing  Pending  Skipped  
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ ✖  mock_payment_flow.cy.js                  00:17        1        -        1        -        - │
+  ├────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ ✖  damaged_goods_return.cy.js               00:27        1        -        1        -        - │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+    ✖  2 of 2 failed (100%)                     00:45        2        -        2        -        -  
+

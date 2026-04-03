@@ -52,6 +52,7 @@ COPY --from=builder /app/pages ./pages
 COPY --from=builder /app/components ./components
 COPY --from=builder /app/styles ./styles
 COPY --from=builder /app/next.config.js ./next.config.js
+COPY --from=builder /app/next-i18next.config.js ./next-i18next.config.js
 
 # Expose port
 EXPOSE 3000

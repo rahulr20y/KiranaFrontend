@@ -1,8 +1,19 @@
 import { useState, useEffect } from 'react';
+import { serverSideTranslations } from 'next-i18next/pages/serverSideTranslations';
+import nextI18NextConfig from '../next-i18next.config.js';
+
+export async function getServerSideProps({ locale }) {
+    return {
+        props: {
+            ...(await serverSideTranslations(locale, ['common'], nextI18NextConfig)),
+        },
+    };
+}
 import { useRouter } from 'next/router';
 import { useCart } from '../lib/cartContext';
 import { useAuth } from '../lib/authContext';
 import { ordersAPI, paymentsAPI } from '../lib/api';
+import { MessagingService } from '../lib/messaging';
 import Navbar from '../components/Navbar';
 import styles from '../styles/cart.module.css';
 
@@ -58,12 +69,22 @@ export default function Cart() {
                     subtotal: item.price * item.quantity
                 }));
 
-                await ordersAPI.createOrder({
+                const orderRes = await ordersAPI.createOrder({
                     items,
                     dealer_id: dealerId,
                     shipping_address: user?.address || 'Main Street, City', 
                     notes: 'Order from Kirana Shopping Cart'
                 });
+
+                // Phase IV: WhatsApp Confirmation
+                try {
+                    await MessagingService.sendOrderConfirmation({
+                        ...orderRes.data,
+                        shopkeeper_email: user.email
+                    });
+                } catch (msgErr) {
+                    console.warn("Messaging failed", msgErr);
+                }
             }
 
             setSuccess('Order(s) placed successfully! Redirecting to dashboard...');

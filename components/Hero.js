@@ -1,8 +1,11 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import styles from '../styles/landing.module.css'
+import { useAuth } from '../lib/authContext'
 
 export default function Hero() {
+    const { isAuthenticated } = useAuth();
+    
     return (
         <section className={`${styles.hero} animate-fade-in-up`}>
             <div className={styles.container}>
@@ -33,8 +36,10 @@ export default function Hero() {
                         </div>
 
                         <div className={styles.ctaButtons}>
-                            <Link href="/signup">
-                                <button className="btn-premium btn-primary">Get Started Now</button>
+                            <Link href={isAuthenticated ? "/dashboard" : "/signup"}>
+                                <button className="btn-premium btn-primary">
+                                    {isAuthenticated ? 'Go to Dashboard' : 'Get Started Now'}
+                                </button>
                             </Link>
                             <a href="#features">
                                 <button className="btn-premium btn-secondary">Learn More</button>
