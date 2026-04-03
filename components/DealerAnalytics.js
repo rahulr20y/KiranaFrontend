@@ -133,6 +133,42 @@ export default function DealerAnalytics({ stats }) {
             </ResponsiveContainer>
           </div>
         </div>
+
+        {/* Staff Efficiency Leaderboard */}
+        <div className={`${styles.analyticsCard} premium-card`} style={{ gridColumn: 'span 2' }}>
+          <div className={styles.cardHeader}>
+            <Award size={18} />
+            <h3>Staff Efficiency Leaderboard</h3>
+          </div>
+          <div className={styles.leaderboardList}>
+            {stats.staff_performance && stats.staff_performance.length > 0 ? (
+              stats.staff_performance.map((staff, idx) => (
+                <div key={idx} className={styles.leaderboardItem}>
+                  <div className={styles.rankNum}>{idx + 1}</div>
+                  <div className={styles.staffInfo}>
+                    <div style={{ fontWeight: '700', fontSize: '14px' }}>{staff.user__username}</div>
+                    <div style={{ fontSize: '12px', color: '#64748b' }}>{staff.role}</div>
+                  </div>
+                  <div className={styles.performanceMetric}>
+                    <span className={styles.metricVal}>{staff.orders_processed}</span>
+                    <span className={styles.metricLabel}>Orders Fulfilled</span>
+                  </div>
+                  <div className={styles.performanceBarContainer}>
+                    <div 
+                      className={styles.performanceBar} 
+                      style={{ 
+                        width: `${Math.min((staff.orders_processed / (stats.staff_performance[0]?.orders_processed || 1)) * 100, 100)}%`,
+                        background: idx === 0 ? 'linear-gradient(90deg, #6366f1, #818cf8)' : '#e2e8f0'
+                      }} 
+                    />
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className={styles.emptyMessage}>No staff metrics recorded yet.</p>
+            )}
+          </div>
+        </div>
       </div>
       
       {/* Forecasting Banner (Phase III) */}
