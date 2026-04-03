@@ -1555,3 +1555,80 @@
   border-radius: 0 2px 2px 0;
   transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+.stockActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.auditIconBtn {
+  padding: 4px 8px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.auditIconBtn:hover {
+  background: #f8fafc;
+  border-color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.auditStats {
+  background: #f8fafc;
+  padding: 15px;
+  border-radius: 12px;
+  border: 1px solid #edf2f7;
+}
+
+.miniStat label {
+  display: block;
+  font-size: 11px;
+  color: #64748b;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.miniStat p {
+  font-size: 20px;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 0;
+}
+
+.auditTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.auditTable th {
+  text-align: left;
+  font-size: 12px;
+  color: #64748b;
+  padding: 12px;
+  border-bottom: 2px solid #edf2f7;
+}
+
+.auditTable td {
+  padding: 12px;
+  border-bottom: 1px solid #edf2f7;
+  font-size: 13px;
+}
+
+.reasonBadge {
+  background: #f1f5f9;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #475569;
+}

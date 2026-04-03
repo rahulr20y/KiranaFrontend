@@ -89,6 +89,9 @@ export default function DealerDashboard_v3() {
     });
     const fileInputRef = useRef(null);
     const lastToastedId = useRef(null);
+    const [showAuditModal, setShowAuditModal] = useState(false);
+    const [activeAuditLogs, setActiveAuditLogs] = useState([]);
+    const [activeAuditProduct, setActiveAuditProduct] = useState(null);
 
     const addToast = useCallback((message, type = 'info') => {
         const id = Date.now();
@@ -236,6 +239,45 @@ export default function DealerDashboard_v3() {
             setActiveLedger(null);
         } finally {
             setLedgerLoading(false);
+        }
+    };
+
+    const handleViewAuditLogs = async (product) => {
+        try {
+            setLoading(true);
+            setActiveAuditProduct(product);
+            const res = await productsAPI.getAuditLogs(product.id);
+            setActiveAuditLogs(res.data);
+            setShowAuditModal(true);
+        } catch (err) {
+            addToast('Failed to load inventory audit logs', 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleQuickStockUpdate = async (product) => {
+        const amount = prompt(`Update stock for ${product.name}. Current: ${product.stock_quantity}. Enter change (e.g., +50 or -10):`);
+        if (!amount || isNaN(amount)) return;
+        
+        const reason = prompt('Reason for change (restock, sale, return, correction):', 'restock');
+        if (!reason) return;
+        
+        const notes = prompt('Additional notes (optional):');
+        
+        try {
+            setLoading(true);
+            await productsAPI.updateStock(product.id, { 
+                amount: parseInt(amount), 
+                reason, 
+                notes 
+            });
+            addToast('Stock updated successfully', 'success');
+            fetchData();
+        } catch (err) {
+            addToast('Failed to update stock', 'error');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -746,6 +788,22 @@ export default function DealerDashboard_v3() {
                                                         {product.stock_quantity <= product.low_stock_threshold && (
                                                             <span className={styles.lowStockBadge}>LOW STOCK</span>
                                                         )}
+                                                        <div className={styles.stockActions}>
+                                                            <button 
+                                                                className={styles.auditIconBtn}
+                                                                onClick={() => handleViewAuditLogs(product)}
+                                                                title="View Inventory Audit History"
+                                                            >
+                                                                📊
+                                                            </button>
+                                                            <button 
+                                                                className={styles.auditIconBtn}
+                                                                onClick={() => handleQuickStockUpdate(product)}
+                                                                title="Quick Stock Update"
+                                                            >
+                                                                ✏️
+                                                            </button>
+                                                        </div>
                                                     </td>
                                                     <td>
                                                         <button 
@@ -1527,6 +1585,62 @@ export default function DealerDashboard_v3() {
                                 <button type="button" className={styles.secondaryBtn} onClick={() => setShowEditProduct(false)} style={{ flex: 1 }}>Cancel</button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+            {showAuditModal && (
+                <div className={styles.modalOverlay}>
+                    <div className={styles.modalContent} style={{ width: '700px', maxHeight: '80vh', overflowY: 'auto' }}>
+                        <div className={styles.modalHeader}>
+                            <h3>📦 Stock Audit Log: {activeAuditProduct?.name}</h3>
+                            <button onClick={() => setShowAuditModal(false)} className={styles.closeBtn}>×</button>
+                        </div>
+                        <div className={styles.modalBody}>
+                            <div className={styles.auditStats} style={{ display: 'flex', gap: '20px', marginBottom: '20px' }}>
+                                <div className={styles.miniStat}>
+                                    <label>Current Stock</label>
+                                    <p>{activeAuditProduct?.stock_quantity}</p>
+                                </div>
+                                <div className={styles.miniStat}>
+                                    <label>Total Logs</label>
+                                    <p>{activeAuditLogs.length}</p>
+                                </div>
+                            </div>
+                            <table className={styles.auditTable}>
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Modified By</th>
+                                        <th>Change</th>
+                                        <th>Status</th>
+                                        <th>Reason/Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {activeAuditLogs.map(log => (
+                                        <tr key={log.id}>
+                                            <td style={{ fontSize: '11px', whiteSpace: 'nowrap' }}>
+                                                {new Date(log.date).toLocaleString()}
+                                            </td>
+                                            <td style={{ fontWeight: '600' }}>{log.user}</td>
+                                            <td style={{ color: log.change > 0 ? '#10b981' : '#ef4444', fontWeight: 'bold' }}>
+                                                {log.change > 0 ? `+${log.change}` : log.change}
+                                            </td>
+                                            <td><strong>{log.new_stock}</strong></td>
+                                            <td>
+                                                <span className={styles.reasonBadge} style={{ textTransform: 'capitalize' }}>{log.reason}</span>
+                                                <p style={{ margin: '4px 0 0', fontSize: '11px', color: '#64748b' }}>{log.notes || '-'}</p>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {activeAuditLogs.length === 0 && (
+                                        <tr>
+                                            <td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>No audit history found for this product.</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             )}
