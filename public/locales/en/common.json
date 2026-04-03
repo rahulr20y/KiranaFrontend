@@ -10,7 +10,10 @@
     "returns": "Returns",
     "profile": "Profile",
     "products": "Products",
-    "cart": "Cart"
+    "cart": "Cart",
+    "staff": "Staff Management",
+    "route": "Delivery Route",
+    "analytics": "Business Analytics"
   },
   "auth": {
     "login": "Login",

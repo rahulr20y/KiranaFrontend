@@ -15,7 +15,6 @@ import {
     ArrowRight,
     MapPin,
     Truck,
-    TrendingUp,
     Map
 } from 'lucide-react';
 import { productsAPI, dealersAPI, notificationsAPI, paymentsAPI, ordersAPI, shopkeepersAPI, returnsAPI } from '../lib/api';
@@ -27,8 +26,21 @@ import { useNotifications } from '../lib/notificationContext';
 import NotificationBell from './NotificationBell';
 import DealerAnalytics from './DealerAnalytics';
 import { generateInvoicePDF } from '../lib/invoice';
+import { useAuth } from '../lib/authContext';
 
 export default function DealerDashboard_v3() {
+    const { user } = useAuth();
+    const isStaff = user?.user_type === 'dealer_staff';
+    const [staff, setStaff] = useState([]);
+    const [showStaffForm, setShowStaffForm] = useState(false);
+    const [staffFormData, setStaffFormData] = useState({
+        username: '',
+        email: '',
+        role: 'Delivery Manager',
+        can_manage_orders: true,
+        can_manage_inventory: false,
+        can_view_analytics: false
+    });
     const [products, setProducts] = useState([]);
     const [dealerProfile, setDealerProfile] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -129,6 +141,16 @@ export default function DealerDashboard_v3() {
                 setRoutePlan(routeRes.data);
             } catch (rErr) {
                 console.warn("Failed to fetch route plan", rErr);
+            }
+
+            // Fetch Staff if Dealer
+            if (!isStaff) {
+                try {
+                    const staffRes = await dealersAPI.getStaff();
+                    setStaff(staffRes.data);
+                } catch (sErr) {
+                    console.warn("Failed to fetch staff", sErr);
+                }
             }
 
             setError('');
@@ -451,12 +473,14 @@ export default function DealerDashboard_v3() {
                     >
                         Broadcasts
                     </button>
-                    <button
-                        className={`${styles.tab} ${activeTab === 'analytics' ? styles.active : ''}`}
-                        onClick={() => setActiveTab('analytics')}
-                    >
-                        📈 Analytics
-                    </button>
+                    {!isStaff && (
+                        <button
+                            className={`${styles.tab} ${activeTab === 'analytics' ? styles.active : ''}`}
+                            onClick={() => setActiveTab('analytics')}
+                        >
+                            📈 Analytics
+                        </button>
+                    )}
                     <button
                         className={`${styles.tab} ${activeTab === 'khata' ? styles.active : ''}`}
                         onClick={() => setActiveTab('khata')}
@@ -1117,6 +1141,126 @@ export default function DealerDashboard_v3() {
                                     <div className={styles.infoField}>
                                         <label>Member Since</label>
                                         <p>{new Date(dealerProfile?.created_at).toLocaleDateString()}</p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {!isStaff && (
+                                <div className={styles.staffSection} style={{ marginTop: '40px', borderTop: '1px solid #e2e8f0', paddingTop: '30px', paddingBottom: '20px' }}>
+                                    <div className={styles.sectionHeader} style={{ marginBottom: '20px' }}>
+                                        <h3>👥 Staff Management</h3>
+                                        <button 
+                                            className={styles.secondaryBtn}
+                                            onClick={() => setShowStaffForm(!showStaffForm)}
+                                        >
+                                            {showStaffForm ? 'Close' : '+ Add Staff Member'}
+                                        </button>
+                                    </div>
+
+                                    {showStaffForm && (
+                                        <form className={styles.staffForm} style={{ background: '#f8fafc', padding: '24px', borderRadius: '16px', marginBottom: '24px', border: '1px solid #e2e8f0' }} onSubmit={async (e) => {
+                                            e.preventDefault();
+                                            try {
+                                                const res = await dealersAPI.addStaff(staffFormData);
+                                                setStaff(prev => [...prev, res.data]);
+                                                setStaffFormData({ 
+                                                    username: '', 
+                                                    email: '', 
+                                                    role: 'Delivery Manager',
+                                                    can_manage_orders: true,
+                                                    can_manage_inventory: false,
+                                                    can_view_analytics: false
+                                                });
+                                                setShowStaffForm(false);
+                                                addToast('Staff member added!', 'success');
+                                            } catch (err) {
+                                                setError(err.response?.data?.error || 'Failed to add staff');
+                                            }
+                                        }}>
+                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', alignItems: 'flex-end' }}>
+                                                <div className={styles.formGroup} style={{ marginBottom: 0 }}>
+                                                    <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '600' }}>Username</label>
+                                                    <input 
+                                                        placeholder="e.g. rahul_staff"
+                                                        value={staffFormData.username}
+                                                        onChange={e => setStaffFormData({...staffFormData, username: e.target.value})}
+                                                        required
+                                                        style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                                                    />
+                                                </div>
+                                                <div className={styles.formGroup} style={{ marginBottom: 0 }}>
+                                                    <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '600' }}>Email</label>
+                                                    <input 
+                                                        placeholder="staff@email.com"
+                                                        type="email"
+                                                        value={staffFormData.email}
+                                                        onChange={e => setStaffFormData({...staffFormData, email: e.target.value})}
+                                                        required
+                                                        style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                                                    />
+                                                </div>
+                                                <div className={styles.formGroup} style={{ marginBottom: 0 }}>
+                                                    <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '600' }}>Operational Role</label>
+                                                    <select 
+                                                        value={staffFormData.role}
+                                                        onChange={e => setStaffFormData({...staffFormData, role: e.target.value})}
+                                                        style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', background: 'white' }}
+                                                    >
+                                                        <option>Delivery Manager</option>
+                                                        <option>Inventory Clerk</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            
+                                            <div style={{ display: 'flex', gap: '20px', marginTop: '15px', background: 'white', padding: '15px', borderRadius: '10px' }}>
+                                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' }}>
+                                                    <input 
+                                                        type="checkbox" 
+                                                        checked={staffFormData.can_manage_orders} 
+                                                        onChange={e => setStaffFormData({...staffFormData, can_manage_orders: e.target.checked})}
+                                                    /> Orders
+                                                </label>
+                                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' }}>
+                                                    <input 
+                                                        type="checkbox" 
+                                                        checked={staffFormData.can_manage_inventory} 
+                                                        onChange={e => setStaffFormData({...staffFormData, can_manage_inventory: e.target.checked})}
+                                                    /> Inventory
+                                                </label>
+                                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' }}>
+                                                    <input 
+                                                        type="checkbox" 
+                                                        checked={staffFormData.can_view_analytics} 
+                                                        onChange={e => setStaffFormData({...staffFormData, can_view_analytics: e.target.checked})}
+                                                    /> Analytics
+                                                </label>
+                                            </div>
+                                            
+                                            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end' }}>
+                                                <button type="submit" className={styles.primaryBtn} style={{ padding: '11px 30px' }}>Onboard Staff Member</button>
+                                            </div>
+                                        </form>
+                                    )}
+
+                                    <div className={styles.staffList} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+                                        {staff.length === 0 ? (
+                                            <p style={{ color: '#64748b', fontStyle: 'italic', gridColumn: '1/-1', textAlign: 'center', padding: '40px', background: '#f8fafc', borderRadius: '12px' }}>
+                                                No operational staff added yet. Delegate tasks to scale faster.
+                                            </p>
+                                        ) : (
+                                            staff.map((member, idx) => (
+                                                <div key={member.id || idx} style={{ display: 'flex', alignItems: 'center', padding: '20px', background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', gap: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                                                    <div style={{ width: '48px', height: '48px', background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)', color: 'white', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', fontSize: '20px' }}>
+                                                        {member.username?.[0]?.toUpperCase() || 'S'}
+                                                    </div>
+                                                    <div style={{ flex: 1 }}>
+                                                        <div style={{ fontWeight: '700', color: '#1e293b', fontSize: '15px' }}>{member.username}</div>
+                                                        <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>{member.role}</div>
+                                                    </div>
+                                                    <div style={{ fontSize: '10px', fontWeight: '800', background: '#ecfdf5', color: '#059669', padding: '4px 10px', borderRadius: '100px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Active</div>
+                                                </div>
+                                            ))
+                                        )}
                                     </div>
                                 </div>
                             )}
