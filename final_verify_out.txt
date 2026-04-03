@@ -1,0 +1,86 @@
+
+> kirana-frontend@1.0.0 cypress:run
+> cypress run --spec cypress/e2e/damaged_goods_return.cy.js
+
+
+DevTools listening on ws://127.0.0.1:41283/devtools/browser/590bcbc3-365e-4995-8b3e-2ffec4d1ba40
+Couldn't find tsconfig.json. tsconfig-paths will be skipped
+Warning: We failed to trash the existing run results.
+
+This error will not affect or change the exit code.
+
+Error: EACCES: permission denied, unlink '/home/rahul/Desktop/Kirana/frontend/cypress/screenshots/google_auth.cy.js/Google Auth — Backend API -- POST usersgoogle-auth returns 400 when id_token is missing (failed).png'
+
+================================================================================
+
+  (Run Starting)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Cypress:        13.6.4                                                                         │
+  │ Browser:        Electron 114 (headless)                                                        │
+  │ Node Version:   v20.20.1 (/home/rahul/.nvm/versions/node/v20.20.1/bin/node)                    │
+  │ Specs:          1 found (damaged_goods_return.cy.js)                                           │
+  │ Searched:       cypress/e2e/damaged_goods_return.cy.js                                         │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                    
+  Running:  damaged_goods_return.cy.js                                                      (1 of 1)
+
+
+  Damaged Goods and Returns Lifecycle
+    1) should allow full lifecycle: Order -> Ship (OTP) -> Deliver -> Return -> Approval -> Credit
+
+
+  0 passing (22s)
+  1 failing
+
+  1) Damaged Goods and Returns Lifecycle
+       should allow full lifecycle: Order -> Ship (OTP) -> Deliver -> Return -> Approval -> Credit:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `.premium-card`, but never found it. Queried from:
+
+              > cy.contains(John340390)
+      at Context.eval (webpack://kirana-frontend/./cypress/e2e/damaged_goods_return.cy.js:64:40)
+
+
+
+
+  (Results)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        1                                                                                │
+  │ Passing:      0                                                                                │
+  │ Failing:      1                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  1                                                                                │
+  │ Video:        true                                                                             │
+  │ Duration:     22 seconds                                                                       │
+  │ Spec Ran:     damaged_goods_return.cy.js                                                       │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+  (Screenshots)
+
+  -  /home/rahul/Desktop/Kirana/frontend/cypress/screenshots/damaged_goods_return.cy.     (1280x720)
+     js/Damaged Goods and Returns Lifecycle -- should allow full lifecycle Order - Sh               
+     ip (OTP) - Deliver - Return - Approval - Credit (failed) (10).png                              
+
+
+  (Video)
+
+  -  Video output: /home/rahul/Desktop/Kirana/frontend/cypress/videos/damaged_goods_return.cy.js.mp4
+
+
+================================================================================
+
+  (Run Finished)
+
+
+       Spec                                              Tests  Passing  Failing  Pending  Skipped  
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ ✖  damaged_goods_return.cy.js               00:22        1        -        1        -        - │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+    ✖  1 of 1 failed (100%)                     00:22        1        -        1        -        -  
+

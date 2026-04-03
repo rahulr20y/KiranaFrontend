@@ -8,6 +8,18 @@ import toastStyles from '../styles/toast.module.css';
 import NotificationToast from './NotificationToast';
 import { useNotifications } from '../lib/notificationContext';
 import NotificationBell from './NotificationBell';
+import { 
+    LayoutDashboard, 
+    Users, 
+    ShoppingBag, 
+    Radio, 
+    CreditCard, 
+    RotateCcw, 
+    User,
+    TrendingDown,
+    ArrowRight
+} from 'lucide-react';
+
 
 export default function ShopkeeperDashboard_v3() {
     const router = useRouter();
@@ -81,10 +93,16 @@ export default function ShopkeeperDashboard_v3() {
             setBroadcasts(Array.isArray(broadcastsRes.data.results) ? broadcastsRes.data.results : (Array.isArray(broadcastsRes.data) ? broadcastsRes.data : []));
             setNotifications(Array.isArray(notificationsRes.data.results) ? notificationsRes.data.results : (Array.isArray(notificationsRes.data) ? notificationsRes.data : []));
             setKhataSummary(khataRes.data);
-            setMyReturns(Array.isArray(returnsRes.data) ? returnsRes.data : []);
+            setMyReturns(Array.isArray(returnsRes.data.results) ? returnsRes.data.results : (Array.isArray(returnsRes.data) ? returnsRes.data : []));
             setSuggestions(Array.isArray(suggestionsRes.data) ? suggestionsRes.data : []);
             setError('');
+            console.log('FetchData Success:', {
+                returns: returnsRes.data,
+                count: returnsRes.data.count,
+                firstReturn: returnsRes.data.results?.[0]?.id
+            });
         } catch (err) {
+
             setError('Failed to load shopkeeper information');
             console.error(err);
         } finally {
@@ -306,14 +324,17 @@ export default function ShopkeeperDashboard_v3() {
 
             <div className={styles.statsGrid}>
                 <div className={styles.statCard}>
+                    <ShoppingBag className={styles.statIcon} size={24} />
                     <div className={styles.statNumber}>{shopkeeperProfile?.total_orders || '0'}</div>
                     <div className={styles.statLabel}>Active Orders</div>
                 </div>
                 <div className={styles.statCard}>
+                    <Users className={styles.statIcon} size={24} />
                     <div className={styles.statNumber}>{preferredDealers.length || '0'}</div>
                     <div className={styles.statLabel}>Preferred Dealers</div>
                 </div>
                 <div className={styles.statCard}>
+                    <CreditCard className={styles.statIcon} size={24} />
                     <div className={styles.statNumber}>₹{khataSummary?.my_total_payable || '0'}</div>
                     <div className={styles.statLabel}>Digital Ledger</div>
                 </div>
@@ -325,45 +346,54 @@ export default function ShopkeeperDashboard_v3() {
                         className={`${styles.tab} ${activeTab === 'overview' ? styles.active : ''}`}
                         onClick={() => setActiveTab('overview')}
                     >
-                        Overview
+                        <LayoutDashboard size={18} />
+                        <span>Overview</span>
                     </button>
                     <button
                         className={`${styles.tab} ${activeTab === 'dealers' ? styles.active : ''}`}
                         onClick={() => setActiveTab('dealers')}
                     >
-                        Dealers
+                        <Users size={18} />
+                        <span>Dealers</span>
                     </button>
                     <button
                         className={`${styles.tab} ${activeTab === 'orders' ? styles.active : ''}`}
                         onClick={() => setActiveTab('orders')}
                     >
-                        Orders
+                        <ShoppingBag size={18} />
+                        <span>Orders</span>
                     </button>
                     <button
                         className={`${styles.tab} ${activeTab === 'broadcasts' ? styles.active : ''}`}
                         onClick={() => setActiveTab('broadcasts')}
                     >
-                        Broadcasts
+                        <Radio size={18} />
+                        <span>Broadcasts</span>
                     </button>
                     <button
                         className={`${styles.tab} ${activeTab === 'khata' ? styles.active : ''}`}
                         onClick={() => setActiveTab('khata')}
                     >
-                        Khata (Ledger)
+                        <CreditCard size={18} />
+                        <span>Khata</span>
                     </button>
                     <button
                         className={`${styles.tab} ${activeTab === 'returns' ? styles.active : ''}`}
                         onClick={() => setActiveTab('returns')}
                     >
-                        Returns
+                        <RotateCcw size={18} />
+                        <span>Returns</span>
+                        {myReturns.length > 0 && <span className={styles.tabBadge}>{myReturns.length}</span>}
                     </button>
                     <button
                         className={`${styles.tab} ${activeTab === 'profile' ? styles.active : ''}`}
                         onClick={() => setActiveTab('profile')}
                     >
-                        Profile
+                        <User size={18} />
+                        <span>Profile</span>
                     </button>
                 </div>
+
 
                 <div className={styles.tabContent}>
                     {activeTab === 'overview' && (
@@ -382,7 +412,18 @@ export default function ShopkeeperDashboard_v3() {
                                                 <button 
                                                     className={styles.secondaryBtn}
                                                     style={{ width: '100%', fontSize: '12px', padding: '4px 0' }}
-                                                    onClick={() => addToast(`Feature coming soon: Quick Restock for ${s.name}`, 'info')}
+                                                    onClick={() => {
+                                                        const itemData = {
+                                                            product: s.product_id,
+                                                            product_name: s.name,
+                                                            product_price: s.price,
+                                                            quantity: 1, // Default to 1 for quick restock
+                                                            unit: 'unit'
+                                                        };
+                                                        loadOrderIntoCart([itemData], s.dealer_id);
+                                                        addToast(`Added ${s.name} to cart!`, 'success');
+                                                        router.push('/cart');
+                                                    }}
                                                 >
                                                     🛒 Quick Restock
                                                 </button>
@@ -570,6 +611,32 @@ export default function ShopkeeperDashboard_v3() {
                                                     >
                                                         📄 Invoice
                                                     </button>
+                                                    {order.status === 'delivered' && (
+                                                        <button 
+                                                            className={styles.secondaryBtn}
+                                                            style={{ padding: '8px', fontSize: '12px', color: '#dc2626', borderColor: '#fecdd3' }}
+                                                            onClick={() => {
+                                                                const reason = prompt('Describe the damage/issue:');
+                                                                if (!reason) return;
+                                                                const qty = prompt('Quantity to return:', '1');
+                                                                if (!qty || isNaN(qty)) return;
+                                                                
+                                                                returnsAPI.createReturn({
+                                                                    item: order.items[0].id,
+                                                                    reason: reason,
+                                                                    quantity: parseInt(qty)
+                                                                }).then(() => {
+                                                                    addToast('Return request submitted successfully!', 'success');
+                                                                    fetchData();
+                                                                    setActiveTab('returns');
+                                                                }).catch(err => {
+                                                                    addToast(err.response?.data?.error || 'Failed to submit return', 'error');
+                                                                });
+                                                            }}
+                                                        >
+                                                            ⚠️ Report Damage
+                                                        </button>
+                                                    )}
                                                 </div>
                                             ) : (
                                                 <button 
@@ -726,41 +793,125 @@ export default function ShopkeeperDashboard_v3() {
 
                     {activeTab === 'returns' && (
                         <div className={styles.returnsTab}>
-                            <h2>My Return Requests</h2>
+                            <div className={styles.sectionHeader}>
+                                <div>
+                                    <h2>Return Requests</h2>
+                                    <p className={styles.subtitle}>Track and manage your product returns and issues</p>
+                                </div>
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                    <button 
+                                        className={styles.secondaryBtn} 
+                                        onClick={() => fetchData()}
+                                        style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
+                                    >
+                                        🔄 Sync
+                                    </button>
+                                    <div className={styles.infoBadge}>
+                                        <RotateCcw size={14} />
+                                        <span>{myReturns.length} Total</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            
                             {myReturns && myReturns.length > 0 ? (
-                                <div className={styles.returnsList}>
-                                    <table className={styles.table}>
-                                        <thead>
-                                            <tr>
-                                                <th>Reference</th>
-                                                <th>Item</th>
-                                                <th>Qty</th>
-                                                <th>Status</th>
-                                                <th>Notes</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {myReturns.map(ret => (
-                                                <tr key={ret.id}>
-                                                    <td>#{ret.order_number?.substring(0, 8)}</td>
-                                                    <td>{ret.product_name}</td>
-                                                    <td>{ret.quantity}</td>
-                                                    <td>
+                                <>
+                                    {/* Total Credit Summary Card */}
+                                    <div className={styles.statsGrid} style={{ marginBottom: '20px' }}>
+                                        <div className={styles.statCard} style={{ background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)', border: '1px solid #bae6fd' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                                                <div style={{ padding: '8px', background: '#fff', borderRadius: '8px', color: '#0369a1' }}>
+                                                    <RotateCcw size={20} />
+                                                </div>
+                                                <span style={{ fontSize: '14px', fontWeight: '600', color: '#0369a1' }}>Total Return Credits</span>
+                                            </div>
+                                            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#0c4a6e' }}>
+                                                ₹{myReturns.filter(r => r.status === 'approved').reduce((acc, curr) => acc + (curr.credit_amount || 0), 0).toLocaleString()}
+                                            </div>
+                                            <p style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
+                                                Approved credits are automatically deducted from your Digital Ledger (Khata).
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className={styles.returnsList}>
+                                        {myReturns.map(ret => (
+                                            <div key={ret.id} className={`${styles.returnCard} premium-card`}>
+                                                <div className={styles.returnCardHeader}>
+                                                    <div className={styles.returnRef}>
+                                                        <span className={styles.refLabel}>Order Ref:</span>
+                                                        <strong>#{ret.order_number?.substring(0, 8)}</strong>
+                                                    </div>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                        {ret.status === 'approved' && (
+                                                            <span style={{ 
+                                                                background: '#ecfdf5', 
+                                                                color: '#059669', 
+                                                                padding: '4px 8px', 
+                                                                borderRadius: '6px', 
+                                                                fontSize: '12px', 
+                                                                fontWeight: 'bold' 
+                                                            }}>
+                                                                + ₹{ret.credit_amount?.toLocaleString()}
+                                                            </span>
+                                                        )}
                                                         <span className={`${styles.statusBadge} ${styles['status_' + ret.status?.toLowerCase()]}`}>
+                                                            {ret.status === 'pending' && <TrendingDown size={12} />}
+                                                            {ret.status === 'approved' && <ShoppingBag size={12} />}
+                                                            {ret.status === 'rejected' && <RotateCcw size={12} />}
                                                             {ret.status}
                                                         </span>
-                                                    </td>
-                                                    <td>{ret.dealer_notes || ret.reason?.substring(0, 30)}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className={styles.returnCardBody}>
+                                                    <div className={styles.returnItemInfo}>
+                                                        <h3>{ret.product_name}</h3>
+                                                        <p>Quantity: <strong>{ret.quantity} Units</strong></p>
+                                                    </div>
+                                                    <div className={styles.returnReasonBox}>
+                                                        <span className={styles.label}>Reason for Return:</span>
+                                                        <p>{ret.reason}</p>
+                                                    </div>
+                                                </div>
+
+                                            {ret.dealer_notes && (
+                                                <div className={styles.dealerFeedback}>
+                                                    <div className={styles.feedbackHeader}>
+                                                        <strong>Dealer Feedback:</strong>
+                                                    </div>
+                                                    <p>{ret.dealer_notes}</p>
+                                                </div>
+                                            )}
+                                            
+                                            <div className={styles.returnCardFooter}>
+                                                <span className={styles.returnDate}>Requested on: {new Date(ret.created_at).toLocaleDateString()}</span>
+                                                <button className={styles.textBtn}>
+                                                    <span>View Details</span>
+                                                    <ArrowRight size={14} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
+                            </>
                             ) : (
-                                <p className={styles.emptyMessage}>No return requests raised yet.</p>
+                                <div className={styles.emptyState}>
+                                    <div className={styles.emptyIcon}>📦</div>
+                                    <h3>No Returns Found</h3>
+                                    <p>You haven&apos;t raised any return requests yet. You can do this from the <strong>Orders</strong> tab for delivered items.</p>
+                                    <button 
+                                        className={styles.secondaryBtn}
+                                        onClick={() => setActiveTab('orders')}
+                                        style={{ marginTop: '1rem' }}
+                                    >
+                                        Go to Orders
+                                    </button>
+                                </div>
                             )}
                         </div>
                     )}
+
 
                     {activeTab === 'profile' && (
                         <div className={styles.profileTab}>

@@ -1,9 +1,13 @@
 import '../styles/global.css'
+import '../styles/modern-globals.css'
 import { AuthProvider } from '../lib/authContext'
 import { NotificationProvider } from '../lib/notificationContext'
 import { CartProvider } from '../lib/cartContext'
 import Head from 'next/head'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
+const queryClient = new QueryClient()
 
 function MyApp({ Component, pageProps }) {
     useEffect(() => {
@@ -23,18 +27,20 @@ function MyApp({ Component, pageProps }) {
 
     return (
         <AuthProvider>
-            <CartProvider>
-                <NotificationProvider>
-                    <Head>
-                        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
-                        <link rel="manifest" href="/manifest.json" />
-                        <meta name="theme-color" content="#1e40af" />
-                        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
-                        <title>Kirana - Smart Dealer Network</title>
-                    </Head>
-                    <Component {...pageProps} />
-                </NotificationProvider>
-            </CartProvider>
+            <QueryClientProvider client={queryClient}>
+                <CartProvider>
+                    <NotificationProvider>
+                        <Head>
+                            <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+                            <link rel="manifest" href="/manifest.json" />
+                            <meta name="theme-color" content="#1e40af" />
+                            <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+                            <title>Kirana - Smart Dealer Network</title>
+                        </Head>
+                        <Component {...pageProps} />
+                    </NotificationProvider>
+                </CartProvider>
+            </QueryClientProvider>
         </AuthProvider>
     )
 }

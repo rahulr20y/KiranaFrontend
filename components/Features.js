@@ -2,34 +2,24 @@ import styles from '../styles/landing.module.css'
 
 const features = [
     {
-        icon: '🔍',
-        title: 'Find Suppliers',
-        description: 'Browse and discover verified dealers offering the products you need with transparent pricing.'
+        title: "Direct Connect",
+        description: "Bypass middlemen and connect directly with verified regional distributors and national brands.",
+        icon: "🔌"
     },
     {
-        icon: '📦',
-        title: 'Easy Ordering',
-        description: 'Place orders in minutes with flexible quantities. Bulk discounts available for regular orders.'
+        title: "Tiered Pricing",
+        description: "Unlock better margins with volume-based discounts and bulk ordering capabilities.",
+        icon: "📈"
     },
     {
-        icon: '💳',
-        title: 'Secure Payments',
-        description: 'Multiple payment options with encrypted transactions. Pay on delivery or with credit terms.'
+        title: "Real-time Tracking",
+        description: "Monitor your supply shipments from the moment they leave the dealer until they arrive at your shop.",
+        icon: "🚚"
     },
     {
-        icon: '🚚',
-        title: 'Fast Delivery',
-        description: 'Track your orders in real-time. Same-day delivery available in select areas.'
-    },
-    {
-        icon: '📊',
-        title: 'Analytics Dashboard',
-        description: 'Track your spending, order history, and get personalized recommendations.'
-    },
-    {
-        icon: '🤝',
-        title: '24/7 Support',
-        description: 'Dedicated customer support to help you with orders, payments, and any issues.'
+        title: "Digital Ledger",
+        description: "Keep track of all your transactions, invoices, and payments in one secure, digital environment.",
+        icon: "💼"
     }
 ]
 
@@ -37,14 +27,14 @@ export default function Features() {
     return (
         <section id="features" className={styles.features}>
             <div className={styles.container}>
-                <h2 className={styles.sectionTitle}>Why Choose Kirana?</h2>
+                <h2 className={styles.sectionTitle}>Built for Scale</h2>
                 <p className={styles.sectionSubtitle}>
-                    We provide everything you need to streamline your business operations
+                    Empowering local businesses with enterprise-grade supply chain tools.
                 </p>
 
                 <div className={styles.featuresGrid}>
                     {features.map((feature, index) => (
-                        <div key={index} className={styles.featureCard}>
+                        <div key={index} className={`${styles.featureCard} premium-card`}>
                             <div className={styles.featureIcon}>{feature.icon}</div>
                             <h3 className={styles.featureTitle}>{feature.title}</h3>
                             <p className={styles.featureDescription}>{feature.description}</p>

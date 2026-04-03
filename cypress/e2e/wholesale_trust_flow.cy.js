@@ -30,7 +30,7 @@ describe('Wholesale Trust & Efficiency Flow', () => {
 
         cy.wait('@dealerSignup', { timeout: 30000 });
         cy.url({ timeout: 60000 }).should('include', '/dashboard');
-        cy.contains('[v1.8 FORCED]', { timeout: 15000 }).should('be.visible');
+        cy.contains('Dashboard', { timeout: 15000 }).should('be.visible');
         
         cy.log('Opening Add Product form');
         cy.contains('button', 'Add Product').should('be.visible').click();
@@ -52,7 +52,7 @@ describe('Wholesale Trust & Efficiency Flow', () => {
         
         // Force refresh to ensure list is updated
         cy.reload();
-        cy.contains('[v1.8 FORCED]', { timeout: 15000 }).should('be.visible');
+        cy.contains('Dashboard', { timeout: 15000 }).should('be.visible');
         cy.contains(dealer.productName, { timeout: 15000 }).should('be.visible');
         
         cy.contains('Logout').click();
@@ -72,7 +72,7 @@ describe('Wholesale Trust & Efficiency Flow', () => {
         cy.wait('@shopSignup', { timeout: 30000 });
         cy.url({ timeout: 60000 }).should('include', '/dashboard');
         // Wait for the latest version with tiered pricing UI
-        cy.contains('[v1.8 FORCED]', { timeout: 15000 }).should('be.visible');
+        cy.contains('Dashboard', { timeout: 15000 }).should('be.visible');
         
         // Go to Products
         cy.contains('nav a', 'Products').click();
@@ -102,8 +102,8 @@ describe('Wholesale Trust & Efficiency Flow', () => {
         cy.contains('My Orders', { timeout: 15000 }).should('be.visible');
         
         // Find the bulk order and re-order
-        cy.contains('Order #').first().parents('[class*="orderCard"]').within(() => {
-            cy.contains('⚡ Re-order').click();
+        cy.contains('Order #').first().parents('div[class*="orderCard"]').within(() => {
+            cy.contains('button', '⚡ Re-order').should('be.visible').click();
         });
         
         // Should land in cart with 100 items
@@ -112,8 +112,8 @@ describe('Wholesale Trust & Efficiency Flow', () => {
         cy.get('input[type="number"]').last().should('have.value', '100');
         cy.contains('₹40,000').should('be.visible');
         
-        // Place a second bulk order to deplete stock faster for suggestion test
-        cy.contains('Confirm & Place Order').click();
+        // Place a second bulk order - now using Confirm button
+        cy.get('button').contains('Confirm & Place Order').click();
         cy.contains('Order(s) placed successfully').should('be.visible');
         
         // --- 4. OTP Lifecycle ---
