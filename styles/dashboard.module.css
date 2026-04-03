@@ -1204,3 +1204,127 @@
     grid-template-columns: 1fr;
   }
 }
+/* Smart Replenishment Suggestions */
+.suggestionsBanner {
+  margin-bottom: 2.5rem;
+  padding: 1.5rem;
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px);
+  border-radius: var(--radius-2xl);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  box-shadow: var(--shadow-xl);
+  position: relative;
+  overflow: hidden;
+}
+
+.suggestionsBanner::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 200px;
+  height: 100%;
+  background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.1), transparent 70%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.suggestionsHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  z-index: 1;
+  position: relative;
+}
+
+.suggestionsHeader h3 {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--primary);
+  letter-spacing: -0.01em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.suggestionsScroll {
+  display: flex;
+  gap: 1.25rem;
+  overflow-x: auto;
+  padding: 0.5rem 0.25rem 1.25rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-light) transparent;
+  z-index: 1;
+  position: relative;
+}
+
+.suggestionsScroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.suggestionsScroll::-webkit-scrollbar-thumb {
+  background-color: var(--primary-light);
+  border-radius: 10px;
+}
+
+.suggestionCard {
+  min-width: 260px;
+  background: white;
+  padding: 1.25rem;
+  border-radius: var(--radius-xl);
+  border: var(--border-subtle);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-smooth);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  position: relative;
+}
+
+.suggestionCard:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary-light);
+}
+
+.suggestionBadge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.urgencyHigh { background: #fff1f2; color: #e11d48; }
+.urgencyMedium { background: #fffbeb; color: #d97706; }
+.urgencyLow { background: #f0fdf4; color: #166534; }
+
+.suggestionName {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-right: 2rem; /* space for badge */
+}
+
+.suggestionReason {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.suggestionFooter {
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+.suggestionPrice {
+  font-weight: 700;
+  color: var(--text-main);
+}

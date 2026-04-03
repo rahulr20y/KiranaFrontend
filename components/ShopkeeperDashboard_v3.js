@@ -17,13 +17,15 @@ import {
     RotateCcw, 
     User,
     TrendingDown,
-    ArrowRight
+    ArrowRight,
+    Zap,
+    Sparkles
 } from 'lucide-react';
 
 
 export default function ShopkeeperDashboard_v3() {
     const router = useRouter();
-    const { loadOrderIntoCart } = useCart();
+    const { loadOrderIntoCart, addToCart } = useCart();
     const [shopkeeperProfile, setShopkeeperProfile] = useState(null);
     const [preferredDealers, setPreferredDealers] = useState([]);
     const [allDealers, setAllDealers] = useState([]);
@@ -423,35 +425,41 @@ export default function ShopkeeperDashboard_v3() {
                 <div className={styles.tabContent}>
                     {activeTab === 'overview' && (
                         <div className={styles.overviewTab}>
-                             {suggestions && suggestions.length > 0 && (
-                                <div className={styles.suggestionsBanner} style={{ marginBottom: '20px', padding: '15px', background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)', borderRadius: '12px', border: '1px solid #bfdbfe' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-                                        <span style={{ fontSize: '20px', marginRight: '10px' }}>📉</span>
-                                        <h3 style={{ margin: 0, fontSize: '16px', color: '#1e40af' }}>Smart Stock Suggestions</h3>
+                            {suggestions && suggestions.length > 0 && (
+                                <div className={styles.suggestionsBanner}>
+                                    <div className={styles.suggestionsHeader}>
+                                        <Sparkles size={20} color="var(--primary)" />
+                                        <h3>Smart Replenishment suggestions</h3>
                                     </div>
-                                    <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '5px' }}>
+                                    <div className={styles.suggestionsScroll}>
                                         {suggestions.map((s, idx) => (
-                                            <div key={idx} style={{ minWidth: '200px', background: '#fff', padding: '10px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-                                                <div style={{ fontSize: '14px', fontWeight: 'bold' }}>{s.name}</div>
-                                                <div style={{ fontSize: '11px', color: '#64748b', margin: '4px 0' }}>{s.reason}</div>
-                                                <button 
-                                                    className={styles.secondaryBtn}
-                                                    style={{ width: '100%', fontSize: '12px', padding: '4px 0' }}
-                                                    onClick={() => {
-                                                        const itemData = {
-                                                            product: s.product_id,
-                                                            product_name: s.name,
-                                                            product_price: s.price,
-                                                            quantity: 1, // Default to 1 for quick restock
-                                                            unit: 'unit'
-                                                        };
-                                                        loadOrderIntoCart([itemData], s.dealer_id);
-                                                        addToast(`Added ${s.name} to cart!`, 'success');
-                                                        router.push('/cart');
-                                                    }}
-                                                >
-                                                    🛒 Quick Restock
-                                                </button>
+                                            <div key={idx} className={styles.suggestionCard} data-cy="suggestion-card">
+                                                <div className={`${styles.suggestionBadge} ${s.urgency === 'high' ? styles.urgencyHigh : (s.urgency === 'medium' ? styles.urgencyMedium : styles.urgencyLow)}`}>
+                                                    {s.urgency}
+                                                </div>
+                                                <div className={styles.suggestionName}>{s.name}</div>
+                                                <div className={styles.suggestionReason}>{s.reason}</div>
+                                                <div className={styles.suggestionFooter}>
+                                                    <span className={styles.suggestionPrice}>₹{s.price}</span>
+                                                    <button 
+                                                        className={styles.primaryBtn}
+                                                        style={{ padding: '6px 12px', fontSize: '0.8rem' }}
+                                                        onClick={() => {
+                                                            const product = {
+                                                                id: s.product_id,
+                                                                name: s.name,
+                                                                price: s.price,
+                                                                dealer: s.dealer_id,
+                                                                unit: 'unit'
+                                                            };
+                                                            addToCart(product, 1);
+                                                            addToast(`Added ${s.name} to cart!`, 'success');
+                                                        }}
+                                                    >
+                                                        <Zap size={14} style={{ marginRight: '4px' }} />
+                                                        Add to Cart
+                                                    </button>
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
