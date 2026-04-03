@@ -7,8 +7,25 @@ import {
 import { TrendingUp, Users, Package, Award, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import styles from '../styles/dashboard.module.css';
 
-export default function DealerAnalytics({ stats }) {
+export default function DealerAnalytics({ stats, varianceData }) {
   const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+
+  const varianceChartData = useMemo(() => {
+    if (!varianceData || !varianceData.trends) return [];
+    return varianceData.trends.map(t => ({
+      date: new Date(t.date).toLocaleDateString([], { month: 'short', day: 'numeric' }),
+      gains: t.gains || 0,
+      losses: Math.abs(t.losses || 0)
+    }));
+  }, [varianceData]);
+
+  const movementBreakdown = useMemo(() => {
+    if (!varianceData || !varianceData.movements) return [];
+    return varianceData.movements.map(m => ({
+      name: m.reason.charAt(0).toUpperCase() + m.reason.slice(1),
+      value: Math.abs(m.total_change)
+    }));
+  }, [varianceData]);
 
   const salesTrendData = useMemo(() => {
     if (!stats || !stats.sales_trends) return [];
@@ -167,6 +184,29 @@ export default function DealerAnalytics({ stats }) {
             ) : (
               <p className={styles.emptyMessage}>No staff metrics recorded yet.</p>
             )}
+          </div>
+        </div>
+        {/* Inventory Movement Analysis */}
+        <div className={`${styles.analyticsCard} premium-card`} style={{ gridColumn: 'span 2' }}>
+          <div className={styles.cardHeader}>
+            <Package size={18} />
+            <h3>30-Day Inventory Velocity</h3>
+          </div>
+          <div style={{ height: 250, width: '100%' }}>
+            <ResponsiveContainer>
+              <BarChart data={varianceChartData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
+                <Tooltip 
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '10px 10px 15px -3px rgba(0,0,0,0.1)' }}
+                  itemStyle={{ fontSize: '11px' }}
+                />
+                <Legend iconType="circle" />
+                <Bar dataKey="gains" name="Stock In (+)" fill="#10b981" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="losses" name="Stock Out (-)" fill="#ef4444" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </div>

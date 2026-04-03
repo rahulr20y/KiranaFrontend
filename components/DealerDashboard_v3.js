@@ -92,6 +92,8 @@ export default function DealerDashboard_v3() {
     const [showAuditModal, setShowAuditModal] = useState(false);
     const [activeAuditLogs, setActiveAuditLogs] = useState([]);
     const [activeAuditProduct, setActiveAuditProduct] = useState(null);
+    const [varianceData, setVarianceData] = useState(null);
+    const [staffLocations, setStaffLocations] = useState([]);
 
     const addToast = useCallback((message, type = 'info') => {
         const id = Date.now();
@@ -151,8 +153,19 @@ export default function DealerDashboard_v3() {
                 try {
                     const staffRes = await dealersAPI.getStaff();
                     setStaff(staffRes.data);
+                    // Live Staff Tracking
+                    const locRes = await dealersAPI.getStaffLocations();
+                    setStaffLocations(locRes.data);
                 } catch (sErr) {
                     console.warn("Failed to fetch staff", sErr);
+                }
+                
+                // Inventory Variance Report
+                try {
+                    const varRes = await productsAPI.getVarianceReport();
+                    setVarianceData(varRes.data);
+                } catch (vErr) {
+                    console.warn("Failed to fetch variance report", vErr);
                 }
             }
 
@@ -280,6 +293,42 @@ export default function DealerDashboard_v3() {
             setLoading(false);
         }
     };
+    const simulateStaffMovement = async () => {
+        if (!isStaff || typeof window === 'undefined') return;
+        
+        // Mock movement around a central point (e.g., Bangalore center)
+        const center = { lat: 12.9716, lng: 77.5946 };
+        const offset = (Math.random() - 0.5) * 0.01;
+        const newLat = center.lat + offset;
+        const newLng = center.lng + offset;
+        
+        try {
+            await dealersAPI.updateStaffLocation(newLat, newLng);
+            console.log("Mock location updated:", newLat, newLng);
+        } catch (err) {
+            console.warn("Failed to update mock location", err);
+        }
+    };
+
+    useEffect(() => {
+        let interval;
+        if (isStaff) {
+            // Update location every 20 seconds for staff
+            interval = setInterval(simulateStaffMovement, 20000);
+            simulateStaffMovement(); // Initial
+        } else if (activeTab === 'route') {
+            // Refresh staff locations for dealer every 10 seconds when in route tab
+            const refreshLocations = async () => {
+                try {
+                    const res = await dealersAPI.getStaffLocations();
+                    setStaffLocations(res.data);
+                } catch (err) {}
+            };
+            interval = setInterval(refreshLocations, 10000);
+            refreshLocations();
+        }
+        return () => clearInterval(interval);
+    }, [isStaff, activeTab]);
 
     const handleAddBroadcast = async (e) => {
         e.preventDefault();
@@ -843,7 +892,35 @@ export default function DealerDashboard_v3() {
                                 </div>
                             </div>
 
-                            {routePlan?.clusters ? (
+                             {/* Live Dispatch Monitor */}
+                             {!isStaff && staffLocations.length > 0 && (
+                                 <div className={styles.dispatchMonitor}>
+                                     <div className={styles.monitorHeader}>
+                                         <Award size={16} color="var(--primary)" />
+                                         <h3>📡 Live Dispatch Radar</h3>
+                                     </div>
+                                     <div className={styles.mapMock}>
+                                         {staffLocations.map(staff => (
+                                             <div 
+                                                 key={staff.id} 
+                                                 className={styles.staffPointer}
+                                                 style={{ 
+                                                     left: `${50 + (staff.lng - 77.5946) * 5000}%`,
+                                                     top: `${50 - (staff.lat - 12.9716) * 5000}%`
+                                                 }}
+                                             >
+                                                 <div className={styles.pointerDot} />
+                                                 <div className={styles.pointerName}>{staff.name}</div>
+                                                 <div className={styles.pointerRole}>{staff.role}</div>
+                                             </div>
+                                         ))}
+                                         <div className={styles.mapGridLines} />
+                                         <p className={styles.mapStatus}>Visualizing {staffLocations.length} active units across Bangalore</p>
+                                     </div>
+                                 </div>
+                             )}
+
+                             {routePlan?.clusters ? (
                                 <div className={styles.manifestContainer}>
                                     {Object.entries(routePlan.clusters).map(([pincode, stops]) => (
                                         <div key={pincode} className={styles.pincodeCluster}>
@@ -1472,7 +1549,7 @@ export default function DealerDashboard_v3() {
                         </div>
                     )}
 
-                    {activeTab === 'analytics' && <DealerAnalytics stats={stats} />}
+                    {activeTab === 'analytics' && <DealerAnalytics stats={stats} varianceData={varianceData} />}
                 </div>
             </div>
             {/* Notification Toasts */}
