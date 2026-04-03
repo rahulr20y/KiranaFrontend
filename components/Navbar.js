@@ -2,18 +2,26 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useAuth } from '../lib/authContext'
 import { useCart } from '../lib/cartContext'
-import { LogOut, LayoutDashboard, ShoppingCart, Package } from 'lucide-react'
+import { LogOut, LayoutDashboard, ShoppingCart, Package, Globe } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { useTranslation } from 'next-i18next'
 import styles from '../styles/navbar.module.css'
 
 export default function Navbar() {
     const router = useRouter()
     const { user, isAuthenticated, logout } = useAuth()
     const { cartCount } = useCart()
+    const { t, i18n } = useTranslation('common')
 
     const handleLogout = async () => {
         await logout()
         router.push('/')
+    }
+
+    const toggleLanguage = () => {
+        const nextLocale = i18n.language === 'en' ? 'hi' : 'en'
+        const { pathname, asPath, query } = router
+        router.push({ pathname, query }, asPath, { locale: nextLocale })
     }
 
     return (
@@ -34,8 +42,8 @@ export default function Navbar() {
                     <ul className={styles.navLinks}>
                         {isAuthenticated ? (
                             <>
-                                <li><Link href="/products" className={router.pathname === '/products' ? styles.active : ''}>Products</Link></li>
-                                <li><Link href="/dashboard" className={router.pathname === '/dashboard' ? styles.active : ''}>Dashboard</Link></li>
+                                <li><Link href="/products" className={router.pathname === '/products' ? styles.active : ''}>{t('dashboard.products')}</Link></li>
+                                <li><Link href="/dashboard" className={router.pathname === '/dashboard' ? styles.active : ''}>{t('dashboard.title')}</Link></li>
                                 {user?.user_type === 'shopkeeper' && (
                                     <li>
                                         <Link href="/cart" className={styles.cartLink}>
@@ -45,7 +53,7 @@ export default function Navbar() {
                                                     <span className={styles.cartBadge}>{cartCount}</span>
                                                 )}
                                             </div>
-                                            <span>Cart</span>
+                                            <span>{t('dashboard.cart')}</span>
                                         </Link>
                                     </li>
                                 )}
@@ -59,6 +67,11 @@ export default function Navbar() {
                     </ul>
 
                     <div className={styles.authActions}>
+                        <button className={styles.langToggle} onClick={toggleLanguage} title="Change Language">
+                            <Globe size={18} />
+                            <span>{i18n.language === 'en' ? 'हिन्दी' : 'EN'}</span>
+                        </button>
+                        <div className={styles.divider} />
                         {isAuthenticated ? (
                             <div className={styles.userSection}>
                                 <div className={styles.userInfo}>
@@ -72,8 +85,8 @@ export default function Navbar() {
                             </div>
                         ) : (
                             <div className={styles.guestActions}>
-                                <Link href="/login" className={styles.loginBtn}>Login</Link>
-                                <Link href="/signup" className={styles.signupBtn}>Get Started</Link>
+                                <Link href="/login" className={styles.loginBtn}>{t('auth.login')}</Link>
+                                <Link href="/signup" className={styles.signupBtn}>{t('auth.signup')}</Link>
                             </div>
                         )}
                     </div>

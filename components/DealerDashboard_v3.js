@@ -12,7 +12,11 @@ import {
     XCircle, 
     Clock, 
     FileText,
-    ArrowRight
+    ArrowRight,
+    MapPin,
+    Truck,
+    TrendingUp,
+    Map
 } from 'lucide-react';
 import { productsAPI, dealersAPI, notificationsAPI, paymentsAPI, ordersAPI, shopkeepersAPI, returnsAPI } from '../lib/api';
 
@@ -62,6 +66,7 @@ export default function DealerDashboard_v3() {
     const [ledgerLoading, setLedgerLoading] = useState(false);
     const [stats, setStats] = useState(null);
     const [returns, setReturns] = useState([]);
+    const [routePlan, setRoutePlan] = useState(null);
     const [showEditProduct, setShowEditProduct] = useState(false);
     const [editProductData, setEditProductData] = useState({
         name: '',
@@ -117,6 +122,15 @@ export default function DealerDashboard_v3() {
                 business_category: profileRes.data.business_category || '',
                 gst_number: profileRes.data.gst_number || '',
             });
+
+            // Fetch Route Plan
+            try {
+                const routeRes = await ordersAPI.getRoutePlan();
+                setRoutePlan(routeRes.data);
+            } catch (rErr) {
+                console.warn("Failed to fetch route plan", rErr);
+            }
+
             setError('');
         } catch (err) {
             setError('Failed to load dealer information');
@@ -425,6 +439,13 @@ export default function DealerDashboard_v3() {
                         Orders
                     </button>
                     <button
+                        className={`${styles.tab} ${activeTab === 'route' ? styles.active : ''}`}
+                        onClick={() => setActiveTab('route')}
+                    >
+                        <Truck size={18} />
+                        <span>Route</span>
+                    </button>
+                    <button
                         className={`${styles.tab} ${activeTab === 'broadcasts' ? styles.active : ''}`}
                         onClick={() => setActiveTab('broadcasts')}
                     >
@@ -720,6 +741,65 @@ export default function DealerDashboard_v3() {
                                             ))}
                                         </tbody>
                                     </table>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {activeTab === 'route' && (
+                        <div className={styles.routeTab}>
+                            <div className={styles.sectionHeader}>
+                                <div>
+                                    <h2>Delivery Manifest</h2>
+                                    <p className={styles.subtitle}>Optimized multi-stop route for today's deliveries</p>
+                                </div>
+                                <div className={styles.routeStats}>
+                                    <div className={styles.infoBadge}>
+                                        <MapPin size={14} />
+                                        <span>{routePlan?.total_stops || 0} Stops</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {routePlan?.clusters ? (
+                                <div className={styles.manifestContainer}>
+                                    {Object.entries(routePlan.clusters).map(([pincode, stops]) => (
+                                        <div key={pincode} className={styles.pincodeCluster}>
+                                            <div className={styles.clusterHeader}>
+                                                <Map size={18} />
+                                                <h3>Neighborhood: {pincode}</h3>
+                                                <span className={styles.stopCount}>{stops.length} stops</span>
+                                            </div>
+                                            <div className={styles.stopList}>
+                                                {stops.map((stop) => (
+                                                    <div key={stop.order_id} className={styles.stopCard}>
+                                                        <div className={styles.stopSequence}>{stop.sequence}</div>
+                                                        <div className={styles.stopDetails}>
+                                                            <div className={styles.stopName}>{stop.shop_name}</div>
+                                                            <div className={styles.stopAddress}>{stop.address}</div>
+                                                            <div className={styles.stopMeta}>
+                                                                <span className={styles.orderLabel}>Order #{stop.order_number}</span>
+                                                                <span className={styles.etaLabel}>ETA: {new Date(stop.eta).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                                            </div>
+                                                        </div>
+                                                        <button 
+                                                            className={styles.secondaryBtn}
+                                                            style={{ padding: '6px 12px', fontSize: '0.75rem' }}
+                                                            onClick={() => alert(`Starting Navigation to ${stop.shop_name}`)}
+                                                        >
+                                                            <MapPin size={14} style={{ marginRight: '4px' }} />
+                                                            Navigate
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className={styles.emptyState}>
+                                    <Truck size={48} color="var(--text-muted)" style={{ opacity: 0.3 }} />
+                                    <p>No stops assigned for today. Move orders to "Shipped" to see them here.</p>
                                 </div>
                             )}
                         </div>

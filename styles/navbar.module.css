@@ -198,6 +198,32 @@
   transform: rotate(15deg) scale(1.1);
   background: #dc2626;
 }
+.langToggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(99, 102, 241, 0.05);
+  border: 1px solid rgba(99, 102, 241, 0.1);
+  border-radius: var(--radius-lg);
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 0.75rem;
+  transition: var(--transition-base);
+  cursor: pointer;
+}
+
+.langToggle:hover {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: var(--primary-light);
+  transform: translateY(-1px);
+}
+
+.langToggle span {
+  font-family: inherit;
+  letter-spacing: 0.02em;
+}
+
 
 @media (max-width: 768px) {
   .navLinks span {
