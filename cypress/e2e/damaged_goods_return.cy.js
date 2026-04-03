@@ -60,15 +60,15 @@ describe('Damaged Goods and Returns Lifecycle', () => {
         cy.url({ timeout: 15000 }).should('include', '/dashboard');
 
         // Shopkeeper follows dealer to browse products
-        cy.get('button').contains('Dealers').click();
-        cy.contains(`John${timestamp}`).closest('.premium-card').within(() => {
+        cy.contains(`John${timestamp}`).closest('div[class*="dealerCard"]').within(() => {
             cy.contains('Follow Dealer').click({ force: true });
             cy.contains('Browse Products', { timeout: 15000 }).click();
         });
 
         // Add to cart and checkout
-        cy.contains(dealer.productName).parents('.productCard').within(() => {
-            cy.contains('Add to Cart').click();
+        cy.contains(dealer.productName).closest('div').within(() => {
+            cy.get('input[type="number"]').clear().type('10');
+            cy.get('button').contains('Add').click();
         });
         cy.contains('added to cart').should('be.visible');
         cy.get('nav').contains('Cart').click();

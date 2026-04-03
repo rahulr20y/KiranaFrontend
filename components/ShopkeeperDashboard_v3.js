@@ -55,6 +55,8 @@ export default function ShopkeeperDashboard_v3() {
         max_qty: 1
     });
     const [suggestions, setSuggestions] = useState([]);
+    const [showMockPaymentModal, setShowMockPaymentModal] = useState(false);
+    const [mockPaymentData, setMockPaymentData] = useState({ dealer: null, amount: 0 });
     const lastToastedId = useRef(null);
 
     const addToast = useCallback((message, type = 'info') => {
@@ -281,6 +283,29 @@ export default function ShopkeeperDashboard_v3() {
         } catch (err) {
             console.error(err);
             addToast('Failed to initiate payment', 'error');
+        }
+    };
+
+    const handleMockPayment = async () => {
+        try {
+            setLoading(true);
+            const { dealer, amount } = mockPaymentData;
+            
+            // Call the new simulation endpoint
+            const res = await paymentsAPI.simulateDirectPayment({
+                dealer_id: dealer.dealer_id,
+                amount: parseFloat(amount),
+                payment_method: 'upi',
+                notes: `Mock UPI payment to ${dealer.business_name}`
+            });
+
+            addToast(`Payment of ₹${amount} successful! Trans ID: ${res.data.transaction_id}`, 'success');
+            setShowMockPaymentModal(false);
+            fetchData();
+        } catch (err) {
+            addToast('Mock payment failed', 'error');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -749,6 +774,17 @@ export default function ShopkeeperDashboard_v3() {
                                                             💳 Pay Digitally
                                                         </button>
                                                         <button 
+                                                            className={styles.secondaryBtn}
+                                                            onClick={() => {
+                                                                setMockPaymentData({ dealer: entry, amount: entry.balance });
+                                                                setShowMockPaymentModal(true);
+                                                            }}
+                                                            style={{ fontSize: '11px', padding: '5px 10px', background: '#f0f9ff', color: '#0369a1', borderColor: '#bae6fd' }}
+                                                            disabled={entry.balance <= 0}
+                                                        >
+                                                            🔍 Scan & Pay (Mock)
+                                                        </button>
+                                                        <button 
                                                             className={styles.actionButton}
                                                             onClick={() => {
                                                                 const amount = prompt(`Enter cash amount paid to ${entry.business_name}:`);
@@ -1033,7 +1069,7 @@ export default function ShopkeeperDashboard_v3() {
                     <div className={styles.modal} style={{ maxWidth: '800px', width: '90%' }}>
                         <div className={styles.modalHeader}>
                             <h2>Ledger History: {activeLedger.business_name}</h2>
-                            <button className={styles.closeBtn} onClick={() => setActiveLedger(null)}>&times;</button>
+                            <button className={styles.closeBtn} onClick={() => setActiveLedger(null)} aria-label="Close modal">&times;</button>
                         </div>
                         {ledgerLoading ? (
                             <p>Loading history...</p>
@@ -1045,7 +1081,7 @@ export default function ShopkeeperDashboard_v3() {
                                             <tr>
                                                 <th>Date</th>
                                                 <th>Reference</th>
-                                                <th>Debit (Purchase)</th>
+                                                <th>Debit (Order)</th>
                                                 <th>Credit (Payment)</th>
                                                 <th>Balance</th>
                                             </tr>
@@ -1067,13 +1103,101 @@ export default function ShopkeeperDashboard_v3() {
                                     </table>
                                 </div>
                                 <div className={styles.ledgerFooter} style={{ marginTop: '20px', padding: '15px', background: '#f8fafc', borderRadius: '8px', display: 'flex', justifyContent: 'space-between' }}>
-                                    <strong>Current Net Payable:</strong>
+                                    <strong>Current Net Balance:</strong>
                                     <strong style={{ fontSize: '18px', color: activeLedger.balance > 0 ? '#ef4444' : '#10b981' }}>
                                         ₹{activeLedger.balance}
                                     </strong>
+                                    <button 
+                                        className={styles.primaryBtn} 
+                                        onClick={() => {
+                                            setMockPaymentData({ dealer: activeLedger, amount: activeLedger.balance });
+                                            setShowMockPaymentModal(true);
+                                        }}
+                                    >
+                                        Scan & Pay (Mock)
+                                    </button>
                                 </div>
                             </div>
                         )}
+                    </div>
+                </div>
+            )}
+
+            {/* Mock Payment (QR Code) Modal */}
+            {showMockPaymentModal && (
+                <div className={styles.modalOverlay}>
+                    <div className={styles.modal} style={{ maxWidth: '450px', background: 'linear-gradient(135deg, #ffffff 0%, #f8faff 100%)' }}>
+                        <div className={styles.modalHeader} style={{ borderBottom: 'none' }}>
+                            <div style={{ textAlign: 'center', width: '100%' }}>
+                                <h2 style={{ color: '#1e3a8a', marginBottom: '5px' }}>Scan & Pay Dealer</h2>
+                                <p style={{ fontSize: '14px', color: '#64748b' }}>Securely pay <strong>{mockPaymentData.dealer?.business_name}</strong></p>
+                            </div>
+                            <button className={styles.closeBtn} onClick={() => setShowMockPaymentModal(false)}>&times;</button>
+                        </div>
+                        
+                        <div className={styles.modalBody} style={{ textAlign: 'center', padding: '0 20px 20px' }}>
+                            <div style={{ 
+                                background: '#fff', 
+                                padding: '25px', 
+                                borderRadius: '16px', 
+                                boxShadow: '0 10px 25px rgba(0,0,0,0.05)', 
+                                border: '1px solid #e2e8f0',
+                                marginBottom: '20px',
+                                display: 'flex',
+                                justifyContent: 'center'
+                            }}>
+                                <div style={{ 
+                                    width: '180px', 
+                                    height: '180px', 
+                                    background: '#000', 
+                                    padding: '10px',
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(4, 1fr)',
+                                    gridTemplateRows: 'repeat(4, 1fr)',
+                                    gap: '8px',
+                                    borderRadius: '8px'
+                                }}>
+                                    {/* Mock QR Patterns */}
+                                    <div style={{ background: '#fff', gridColumn: '1/3', gridRow: '1/3' }}></div>
+                                    <div style={{ background: '#000', gridColumn: '1/2', gridRow: '1/2', margin: '4px' }}></div>
+                                    <div style={{ background: '#fff', gridColumn: '3/5', gridRow: '1/3' }}></div>
+                                    <div style={{ background: '#fff', gridColumn: '1/3', gridRow: '3/5' }}></div>
+                                    <div style={{ background: '#fff', gridColumn: '3/5', gridRow: '3/5', display: 'grid', gap: '4px' }}>
+                                        <div style={{ background: '#000' }}></div>
+                                        <div style={{ background: '#000' }}></div>
+                                        <div style={{ background: '#000' }}></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style={{ marginTop: '15px', padding: '10px', background: '#f1f5f9', borderRadius: '8px' }}>
+                                <div style={{ fontSize: '12px', color: '#64748b', fontWeight: '600', textTransform: 'uppercase' }}>Amount to Pay</div>
+                                <div style={{ fontSize: '28px', fontWeight: '800', color: '#0f172a' }}>₹{mockPaymentData.amount.toLocaleString()}</div>
+                            </div>
+
+                            <div style={{ marginBottom: '20px' }}>
+                                <p style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '10px' }}>Accepted Apps</p>
+                                <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', opacity: 0.7 }}>
+                                    <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#6739b7' }}>PhonePe</span>
+                                    <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#4285f4' }}>GPay</span>
+                                    <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#00baf2' }}>Paytm</span>
+                                </div>
+                            </div>
+
+                            <button 
+                                className={styles.primaryBtn}
+                                onClick={handleMockPayment}
+                                style={{ width: '100%', padding: '14px', fontSize: '16px', borderRadius: '12px', background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)' }}
+                            >
+                                ✅ I have Paid (Confirm)
+                            </button>
+                            <button 
+                                className={styles.textBtn}
+                                onClick={() => setShowMockPaymentModal(false)}
+                                style={{ marginTop: '10px', width: '100%' }}
+                            >
+                                Cancel Transaction
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
